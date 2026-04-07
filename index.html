@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Vishleshak - Unified Trading Platform</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&amp;family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+
+    <!-- Unified Tailwind Config -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df259", // Unified Vibrant Mint Green
+                        "bg-dark": "#0a0c10", // Deepest background
+                        "panel-dark": "#161b22", // Panel background
+                        "border-dark": "#30363d", // Borders
+                        "deep-indigo": "#0d1117", // Secondary deep background
+                        "muted-slate": "#475569",
+                        "slate-brand": "#1c2128",
+                        "accent-blue": "#3b82f6",
+                        "crimson-red": "#ff4d4d",
+                        "slate-muted": "#64748b",
+                        "border-subtle": "rgba(255,255,255,0.06)",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"],
+                        "body-serif": ["Lora", "serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.375rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="bg-deep-indigo text-slate-200 font-sans antialiased h-screen w-full overflow-hidden">
+
+    <!-- VIEW 1: Trader Account Registration -->
+    <div id="view-registration" class="view-container">
+        <!-- Content from trader_account_registration/code.html minus the html/head/body tags -->
+        <div class="page-wrapper flex-col justify-between items-center w-full h-full overflow-y-auto">
+            <nav class="w-full p-10 flex justify-center shrink-0">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-deep-indigo shadow-[0_0_20px_rgba(13,242,89,0.3)]">
+                        <span class="material-symbols-outlined font-bold text-2xl">query_stats</span>
+                    </div>
+                    <h1 class="text-2xl font-bold tracking-[0.3em] text-white uppercase">Vishleshak</h1>
+                </div>
+            </nav>
+            <main class="flex-grow flex items-center justify-center px-6 py-8 w-full">
+                <div class="w-full max-w-[580px]">
+                    <div class="glass-card-subtle rounded-[2rem] p-10 md:p-14 relative overflow-hidden">
+                        <header class="text-center mb-12">
+                            <h2 class="text-4xl md:text-5xl font-serif text-white mb-5 font-bold tracking-tight">Secure
+                                Analyst Onboarding</h2>
+                            <p class="text-slate-400 font-body-serif italic text-xl">Enter the high-frequency
+                                intelligence perimeter.</p>
+                        </header>
+                        <form class="space-y-8" onsubmit="return false;">
+                            <div class="space-y-3">
+                                <label class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 ml-1">Full
+                                    Identity</label>
+                                <input
+                                    class="w-full rounded-xl border-white/5 bg-white/5 py-4.5 px-5 text-white placeholder:text-slate-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all text-sm"
+                                    placeholder="e.g. Alexander Sterling" type="text" />
+                            </div>
+                            <div class="space-y-3">
+                                <label
+                                    class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 ml-1">Professional
+                                    Credential</label>
+                                <input
+                                    class="w-full rounded-xl border-white/5 bg-white/5 py-4.5 px-5 text-white placeholder:text-slate-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all text-sm"
+                                    placeholder="analyst@institutional.com" type="email" />
+                            </div>
+                            <div class="space-y-3">
+                                <label
+                                    class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 ml-1">Secure
+                                    Access Key</label>
+                                <div class="relative">
+                                    <input
+                                        class="w-full rounded-xl border-white/5 bg-white/5 py-4.5 px-5 text-white placeholder:text-slate-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all text-sm"
+                                        placeholder="••••••••••••" type="password" />
+                                    <span
+                                        class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 text-xl cursor-pointer hover:text-primary transition-colors">visibility</span>
+                                </div>
+                                <div class="pt-3">
+                                    <div class="flex gap-2 mb-3">
+                                        <div class="strength-meter-bar bg-primary"></div>
+                                        <div class="strength-meter-bar bg-primary"></div>
+                                        <div class="strength-meter-bar bg-primary"></div>
+                                        <div class="strength-meter-bar bg-white/10"></div>
+                                    </div>
+                                    <div class="flex justify-between items-center px-1">
+                                        <span
+                                            class="text-[9px] font-bold uppercase tracking-widest text-primary">Encryption
+                                            Level: Tier 3</span>
+                                        <span
+                                            class="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Complex
+                                            Requirements Met</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4 py-2">
+                                <div class="relative flex items-center h-6">
+                                    <input class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer z-10"
+                                        id="terms" type="checkbox" />
+                                    <label class="flex items-center cursor-pointer" for="terms">
+                                        <span
+                                            class="check-box w-6 h-6 border border-white/10 rounded-md flex items-center justify-center transition-all duration-200 bg-white/5">
+                                            <span
+                                                class="material-symbols-outlined check-icon text-deep-indigo text-lg font-bold scale-0 opacity-0 transition-all duration-200">check</span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <label class="text-xs text-slate-400 leading-relaxed font-medium" for="terms">
+                                    I verify compliance with the <a
+                                        class="text-white hover:text-primary transition-colors underline underline-offset-4 decoration-white/20"
+                                        href="#">Institutional Protocols</a> and <a
+                                        class="text-white hover:text-primary transition-colors underline underline-offset-4 decoration-white/20"
+                                        href="#">Privacy Governance</a>.
+                                </label>
+                            </div>
+                            <button data-route="dashboard"
+                                class="w-full rounded-xl bg-primary py-5 text-xs font-bold tracking-[0.25em] uppercase text-deep-indigo shadow-lg shadow-primary/5 hover:shadow-[0_0_20px_rgba(13,242,89,0.4)] hover:brightness-105 transition-all">
+                                Initialize Terminal Access
+                            </button>
+                        </form>
+                        <div class="mt-12 text-center">
+                            <p class="text-xs tracking-wide text-slate-500 font-medium">
+                                Existing Institutional Partner?
+                                <a data-route="dashboard"
+                                    class="text-white hover:text-primary transition-colors font-bold ml-1 border-b border-white/20 cursor-pointer">Login
+                                    to Network</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <footer class="w-full pb-10 px-6 mt-auto shrink-0">
+                <div class="max-w-5xl mx-auto">
+                    <div class="flex flex-col items-center gap-10">
+                        <div class="relative w-full flex items-center justify-center">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-white/5"></div>
+                            </div>
+                            <span
+                                class="relative bg-deep-indigo px-6 text-[10px] uppercase tracking-[0.4em] text-slate-600 font-bold">Trusted
+                                by Elite Firms</span>
+                        </div>
+                        <div
+                            class="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-20 grayscale hover:opacity-40 transition-opacity duration-700">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-2xl">account_balance</span>
+                                <span class="font-serif text-lg font-bold tracking-tight">KENSINGTON</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-2xl">monitoring</span>
+                                <span class="font-serif text-lg font-bold tracking-tight">VANGUARD</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-2xl">diamond</span>
+                                <span class="font-serif text-lg font-bold tracking-tight">AURELIUS</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+                                <span class="font-serif text-lg font-bold tracking-tight">PEAK CAPITAL</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-2xl">shield_with_heart</span>
+                                <span class="font-serif text-lg font-bold tracking-tight">PRUDENTIAL</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- VIEW 2: Market Dashboard Overview -->
+    <div id="view-dashboard" class="view-container">
+        <!-- Dashboard Sidebar Container -->
+        <aside class="w-64 flex-shrink-0 bg-deep-indigo border-r border-border-subtle flex flex-col z-20 h-full">
+            <div class="p-6 flex items-center gap-3">
+                <div
+                    class="size-8 bg-primary rounded flex items-center justify-center text-deep-indigo shadow-[0_0_20px_rgba(13,242,89,0.2)]">
+                    <span class="material-symbols-outlined !font-bold">query_stats</span>
+                </div>
+                <h1 class="text-lg font-bold tracking-tight text-white italic">Quant<span
+                        class="text-primary font-normal not-italic ml-0.5">AI</span></h1>
+            </div>
+            <nav class="flex-1 px-4 space-y-0.5 mt-2">
+                <p class="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-muted/60">Core
+                    Navigation</p>
+                <a href="#" data-route="dashboard"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/5 text-primary border border-white/5 transition-all">
+                    <span class="material-symbols-outlined">grid_view</span>
+                    <span class="text-sm font-semibold">Overview</span>
+                </a>
+                <a href="#" data-route="prediction"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <span class="text-sm font-medium">Prediction Engine</span>
+                </a>
+                <a href="#" data-route="upload"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">database</span>
+                    <span class="text-sm font-medium">Data Ingestion</span>
+                </a>
+                <a href="#" data-route="registration"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span class="text-sm font-medium">Logout</span>
+                </a>
+            </nav>
+            <div class="p-4 mx-4 mb-4 rounded-xl bg-white/[0.02] border border-border-subtle">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-muted mb-3">Quick Actions</p>
+                <div class="space-y-2">
+                    <button
+                        class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded bg-primary text-deep-indigo hover:brightness-110 transition-all font-bold text-xs">
+                        <span class="material-symbols-outlined !text-[18px]">add</span>
+                        New Analysis
+                    </button>
+                </div>
+            </div>
+            <div class="mt-auto p-4 border-t border-border-subtle">
+                <div class="flex items-center gap-3 px-2">
+                    <img alt="User Profile" class="size-8 rounded-full object-cover ring-2 ring-primary/20"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqIv2b4NtnhmaOs8mbAp32sXZFZRoSY-S2LHfu3crCQJkYOo3lKTWoNl0ME2ahwsBa41pwoRUHBfvBCsvspjWjsa3z0-kUM9sNLrO1NwKxNHokWP6AZ2chIMfb4QtNjMh9QT9_fHu-mRolJFFMtsPOHV2Haxk0J8_ok6XSqn1GZowTkf0W1_XTkN_U2xY1OH6WqqwufEKRe9YRnm4ILGvG5R_bXavdjpw2y7VLgV1MHUAoPuOTa7QM3kx5kCAHcGuOIIbdcybqFSvb" />
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold text-white leading-none">Alex Morgan</span>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-tighter">Pro Trader</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Dashboard Main Content -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-bg-dark h-full">
+            <header
+                class="h-16 flex-shrink-0 flex items-center justify-between px-8 border-b border-border-subtle sticky top-0 bg-bg-dark/90 backdrop-blur-md z-10 w-full">
+                <div class="flex items-center gap-8 flex-1">
+                    <div>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Refined Market Dashboard</h2>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="size-1.5 rounded-full bg-primary shadow-[0_0_8px_#0df259]"></span>
+                            <p class="text-[10px] text-slate-muted uppercase font-bold tracking-widest">
+                                Live Feed • Last Updated: <span class="text-white/70">Oct 24, 14:42:01</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar w-full relative">
+                <section>
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-[11px] font-bold text-slate-muted uppercase tracking-[0.25em]">Performance at a
+                            Glance</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="border-b md:border-b-0 md:border-r border-border-subtle pb-4 md:pb-0 md:pr-6">
+                            <p class="text-[10px] font-bold text-slate-muted uppercase tracking-widest mb-2">Total
+                                Predictions</p>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-2xl font-bold tracking-tight text-white">12,482</span>
+                                <span class="text-[10px] font-bold text-primary">+12.4%</span>
+                            </div>
+                        </div>
+                        <div
+                            class="border-b md:border-b-0 md:border-r border-border-subtle pb-4 md:pb-0 md:pr-6 md:pl-2">
+                            <p class="text-[10px] font-bold text-slate-muted uppercase tracking-widest mb-2">System Load
+                            </p>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-2xl font-bold tracking-tight text-white">24.8%</span>
+                                <span class="text-[10px] font-bold text-slate-muted">Nominal</span>
+                            </div>
+                        </div>
+                        <div
+                            class="border-b md:border-b-0 md:border-r border-border-subtle pb-4 md:pb-0 md:pr-6 md:pl-2">
+                            <p class="text-[10px] font-bold text-slate-muted uppercase tracking-widest mb-2">Market
+                                Delta</p>
+                            <div class="flex items-baseline gap-2">
+                                <span id="market-delta-value" class="text-2xl font-bold tracking-tight text-white">—</span>
+                                <span id="market-delta-change" class="text-[10px] font-bold text-slate-muted">Live</span>
+                            </div>
+                        </div>
+                        <div class="md:pl-2">
+                            <p class="text-[10px] font-bold text-slate-muted uppercase tracking-widest mb-2">Signal
+                                Strength</p>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-2xl font-bold tracking-tight text-primary">84.0</span>
+                                <span class="text-[10px] font-bold text-primary/60">High</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="bg-white/[0.01] rounded-xl border border-border-subtle overflow-hidden">
+                    <div class="p-6 border-b border-border-subtle flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-white uppercase tracking-tight">Intraday Momentum</h3>
+                            <p class="text-xs text-slate-muted mt-0.5 font-medium">S&amp;P 500 Composite AI Feed
+                                (Real-time)</p>
+                        </div>
+                        <div class="flex bg-white/[0.02] p-0.5 rounded border border-border-subtle">
+                            <button
+                                class="px-3 py-1 text-[10px] font-bold rounded text-slate-muted hover:text-white md:block hidden transition-colors uppercase">1H</button>
+                            <button
+                                class="px-3 py-1 text-[10px] font-bold rounded bg-white/5 text-white uppercase">1D</button>
+                            <button
+                                class="px-3 py-1 text-[10px] font-bold rounded text-slate-muted hover:text-white transition-colors uppercase">1W</button>
+                            <button
+                                class="px-3 py-1 text-[10px] font-bold rounded text-slate-muted hover:text-white transition-colors uppercase">All</button>
+                        </div>
+                    </div>
+                    <div id="live-chart-container"
+                        class="relative h-80 w-full border-t border-border-subtle overflow-hidden">
+                        <!-- Lightweight Charts will inject the canvas here -->
+                    </div>
+                </div>
+
+                <div class="bg-white/[0.01] rounded-xl border border-border-subtle overflow-hidden">
+                    <div class="px-8 py-5 border-b border-border-subtle flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-white uppercase tracking-tight">Recent Data Pipelines</h3>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead
+                                class="bg-white/[0.02] text-[10px] font-bold text-slate-muted uppercase tracking-widest">
+                                <tr>
+                                    <th class="px-8 py-3 border-b border-border-subtle">Resource Name</th>
+                                    <th class="px-8 py-3 border-b border-border-subtle hidden md:table-cell">Timestamp
+                                    </th>
+                                    <th class="px-8 py-3 border-b border-border-subtle">Status</th>
+                                    <th class="px-8 py-3 border-b border-border-subtle text-right">Data Points</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pipelines-tbody" class="divide-y divide-border-subtle">
+                                <tr class="hover:bg-white/[0.02] transition-colors">
+                                    <td colspan="4" class="px-8 py-6 text-center text-slate-500 text-xs">No uploads yet — upload a CSV from Data Ingestion</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- VIEW 3: Prediction Engine -->
+    <div id="view-prediction" class="view-container">
+        <!-- Sidebar Navigation (Same as Dashboard, but distinct selection) -->
+        <aside class="w-64 flex-shrink-0 bg-deep-indigo border-r border-border-subtle flex flex-col z-20 h-full">
+            <div class="p-6 flex items-center gap-3">
+                <div
+                    class="size-8 bg-primary rounded flex items-center justify-center text-deep-indigo shadow-[0_0_20px_rgba(13,242,89,0.2)]">
+                    <span class="material-symbols-outlined !font-bold">query_stats</span>
+                </div>
+                <h1 class="text-lg font-bold tracking-tight text-white italic">Quant<span
+                        class="text-primary font-normal not-italic ml-0.5">AI</span></h1>
+            </div>
+            <nav class="flex-1 px-4 space-y-0.5 mt-2">
+                <p class="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-muted/60">Core
+                    Navigation</p>
+                <a href="#" data-route="dashboard"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">grid_view</span>
+                    <span class="text-sm font-semibold">Overview</span>
+                </a>
+                <a href="#" data-route="prediction"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/5 text-primary border border-white/5 transition-all">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <span class="text-sm font-medium">Prediction Engine</span>
+                </a>
+                <a href="#" data-route="upload"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">database</span>
+                    <span class="text-sm font-medium">Data Ingestion</span>
+                </a>
+                <a href="#" data-route="registration"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span class="text-sm font-medium">Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Prediction Engine Content -->
+        <main class="flex-1 flex overflow-hidden w-full h-full bg-bg-dark">
+            <aside
+                class="w-72 border-r border-border-dark bg-panel-dark flex flex-col shrink-0 overflow-y-auto custom-scrollbar">
+                <div class="p-5 space-y-6 flex-1">
+                    <div class="space-y-4">
+                        <h3 class="text-[11px] font-bold text-slate-muted uppercase tracking-widest">Model Configuration
+                        </h3>
+                        <div class="space-y-2">
+                            <label class="text-xs text-slate-300 font-medium">Asset Pair</label>
+                            <div class="relative group">
+                                <select
+                                    class="w-full bg-border-dark/50 border border-border-subtle rounded py-2 px-3 text-sm text-slate-100 focus:ring-1 focus:ring-primary appearance-none outline-none">
+                                    <option>BTC / USD</option>
+                                    <option>ETH / USD</option>
+                                    <option>NASDAQ: AAPL</option>
+                                    <option>S&amp;P 500 Index</option>
+                                </select>
+                                <span
+                                    class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-muted text-lg pointer-events-none">expand_more</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs text-slate-300 font-medium">Primary AI Architecture</label>
+                            <div class="relative group">
+                                <select
+                                    class="w-full bg-border-dark/50 border border-border-subtle rounded py-2 px-3 text-sm text-slate-100 focus:ring-1 focus:ring-primary appearance-none outline-none">
+                                    <option>Temporal LSTM v4.2</option>
+                                    <option>Transformer-RT Core</option>
+                                </select>
+                                <span
+                                    class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-muted text-lg pointer-events-none">expand_more</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4 pt-2 border-t border-border-subtle">
+                        <h3 class="text-[11px] font-bold text-slate-muted uppercase tracking-widest">Compute Parameters
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center text-[10px] font-bold uppercase">
+                                    <span class="text-slate-muted">Confidence Threshold</span>
+                                    <span id="conf-label" class="text-primary">92%</span>
+                                </div>
+                                <input id="pred-confidence"
+                                    class="w-full h-1 bg-border-dark rounded-lg appearance-none cursor-pointer accent-primary"
+                                    type="range" min="60" max="99" value="92"
+                                    oninput="document.getElementById('conf-label').textContent = this.value + '%'" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 border-t border-border-subtle bg-slate-brand">
+                    <button id="run-analysis-btn"
+                        class="w-full bg-primary text-bg-dark py-2.5 rounded font-bold hover:brightness-110 flex items-center justify-center gap-2 transition-all">
+                        <span class="material-symbols-outlined text-xl">query_stats</span>
+                        <span class="text-sm">Run Analysis</span>
+                    </button>
+                </div>
+            </aside>
+            <section class="flex-1 flex flex-col bg-bg-dark relative overflow-hidden">
+                <div class="flex items-center justify-between px-6 py-3 border-b border-border-dark bg-panel-dark/30">
+                    <h2 class="text-sm font-bold text-white tracking-widest uppercase">Advanced Prediction Workspace</h2>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(13,242,89,0.3)]"></span>
+                            <span id="pred-model-label" class="text-[10px] text-slate-muted font-bold uppercase">LSTM Prediction</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 relative p-2 flex flex-col">
+                    <!-- Placeholder shown before Run Analysis -->
+                    <div id="pred-placeholder" class="flex flex-col items-center justify-center h-full gap-4 text-slate-600">
+                        <span class="material-symbols-outlined text-6xl">area_chart</span>
+                        <p class="text-sm font-semibold">Select parameters and click <strong class="text-slate-400">Run Analysis</strong> to generate a forecast</p>
+                    </div>
+                    <!-- Real Lightweight Charts container, hidden until Run Analysis -->
+                    <div id="prediction-chart-container" class="hidden w-full flex-1 min-h-[420px]"></div>
+                    <!-- Stats bar shown after analysis -->
+                    <div id="pred-stats-bar" class="hidden flex items-center gap-6 px-4 py-2 border-t border-border-subtle bg-black/20 text-xs font-mono text-slate-400 flex-wrap">
+                        <span>Asset: <strong id="ps-asset" class="text-white">—</strong></span>
+                        <span>Model: <strong id="ps-model" class="text-white">—</strong></span>
+                        <span>Forecast: <strong class="text-white">30 days</strong></span>
+                        <span>Day 1 Close: <strong id="ps-day1" class="text-primary">—</strong></span>
+                        <span>Day 30 Close: <strong id="ps-day30" class="text-primary">—</strong></span>
+                    </div>
+                </div>
+            </section>
+
+            <script>
+                let predChart = null;
+
+                document.getElementById('run-analysis-btn').addEventListener('click', async () => {
+                    const btn = document.getElementById('run-analysis-btn');
+                    const selects = document.querySelectorAll('#view-prediction aside select');
+                    const asset = selects[0] ? selects[0].value : 'BTC/USD';
+                    const model = selects[1] ? selects[1].value : 'LSTM';
+                    const confidence = document.querySelector('#view-prediction aside input[type=range]')?.value ?? 80;
+
+                    // Loading state
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="material-symbols-outlined text-xl animate-spin">autorenew</span><span class="text-sm">Analyzing...</span>';
+                    document.getElementById('pred-model-label').textContent = model + ' · Processing';
+
+                    try {
+                        const res = await fetch('/api/predict', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ asset, model, confidence, days: 30 })
+                        });
+                        if (!res.ok) throw new Error('Server error ' + res.status);
+                        const data = await res.json();
+                        renderPredictionChart(data);
+                    } catch (err) {
+                        document.getElementById('pred-model-label').textContent = 'Error: ' + err.message;
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span class="material-symbols-outlined text-xl">query_stats</span><span class="text-sm">Run Analysis</span>';
+                    }
+                });
+
+                function renderPredictionChart(data) {
+                    const container = document.getElementById('prediction-chart-container');
+                    document.getElementById('pred-placeholder').classList.add('hidden');
+                    container.classList.remove('hidden');
+
+                    // Destroy previous chart if any
+                    if (predChart) { predChart.remove(); predChart = null; }
+
+                    predChart = LightweightCharts.createChart(container, {
+                        width: container.clientWidth,
+                        height: container.clientHeight || 420,
+                        layout: { background: { type: 'solid', color: '#0a0c10' }, textColor: '#64748b' },
+                        grid: {
+                            vertLines: { color: 'rgba(255,255,255,0.03)' },
+                            horzLines: { color: 'rgba(255,255,255,0.03)' }
+                        },
+                        rightPriceScale: { borderColor: 'rgba(255,255,255,0.06)' },
+                        timeScale: { borderColor: 'rgba(255,255,255,0.06)', timeVisible: true }
+                    });
+
+                    // Line series — predictions
+                    const lineSeries = predChart.addLineSeries({
+                        color: '#0df259',
+                        lineWidth: 2,
+                        crosshairMarkerVisible: true,
+                        crosshairMarkerRadius: 5,
+                        title: 'AI Forecast'
+                    });
+
+                    // Area series — confidence band
+                    const areaSeries = predChart.addAreaSeries({
+                        topColor: 'rgba(13,242,89,0.08)',
+                        bottomColor: 'rgba(13,242,89,0.01)',
+                        lineColor: 'rgba(13,242,89,0)',
+                        lineWidth: 0
+                    });
+
+                    const today = Date.now();
+                    const lineData = data.predictions.map((p, i) => ({
+                        time: Math.floor((today + i * 86400000) / 1000),
+                        value: parseFloat(p.predictedClose)
+                    }));
+                    const areaData = data.predictions.map((p, i) => ({
+                        time: Math.floor((today + i * 86400000) / 1000),
+                        value: parseFloat(p.predictedClose) * (1 + (100 - parseFloat(p.confidence)) / 300)
+                    }));
+
+                    lineSeries.setData(lineData);
+                    areaSeries.setData(areaData);
+                    predChart.timeScale().fitContent();
+
+                    // Update stats bar
+                    document.getElementById('pred-stats-bar').classList.remove('hidden');
+                    document.getElementById('ps-asset').textContent = data.asset;
+                    document.getElementById('ps-model').textContent = data.model;
+                    document.getElementById('ps-day1').textContent = '$' + lineData[0].value.toFixed(2);
+                    document.getElementById('ps-day30').textContent = '$' + lineData[lineData.length - 1].value.toFixed(2);
+                    document.getElementById('pred-model-label').textContent = data.model + ' · Ready';
+
+                    // Resize on window resize
+                    new ResizeObserver(() => {
+                        if (predChart) predChart.applyOptions({ width: container.clientWidth, height: container.clientHeight || 420 });
+                    }).observe(container);
+                }
+            </script>
+
+    <!-- VIEW 4: Data Upload -->
+    <div id="view-upload" class="view-container">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 flex-shrink-0 bg-deep-indigo border-r border-border-subtle flex flex-col z-20 h-full">
+            <div class="p-6 flex items-center gap-3">
+                <div
+                    class="size-8 bg-primary rounded flex items-center justify-center text-deep-indigo shadow-[0_0_20px_rgba(13,242,89,0.2)]">
+                    <span class="material-symbols-outlined !font-bold">query_stats</span>
+                </div>
+                <h1 class="text-lg font-bold tracking-tight text-white italic">Quant<span
+                        class="text-primary font-normal not-italic ml-0.5">AI</span></h1>
+            </div>
+            <nav class="flex-1 px-4 space-y-0.5 mt-2">
+                <p class="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-muted/60">Core
+                    Navigation</p>
+                <a href="#" data-route="dashboard"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">grid_view</span>
+                    <span class="text-sm font-semibold">Overview</span>
+                </a>
+                <a href="#" data-route="prediction"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <span class="text-sm font-medium">Prediction Engine</span>
+                </a>
+                <a href="#" data-route="upload"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/5 text-primary border border-white/5 transition-all">
+                    <span class="material-symbols-outlined">database</span>
+                    <span class="text-sm font-medium">Data Ingestion</span>
+                </a>
+                <a href="#" data-route="registration"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-muted hover:text-white hover:bg-white/5 transition-all">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span class="text-sm font-medium">Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 flex flex-col bg-bg-dark w-full h-full overflow-y-auto custom-scrollbar">
+            <div class="p-8 max-w-5xl mx-auto w-full space-y-8">
+                <header>
+                    <h2 class="text-3xl font-black text-white tracking-tight">Pro Data Ingestion &amp; Mapping</h2>
+                    <p class="text-slate-400 mt-1">Scale your analysis with high-fidelity data pipelines</p>
+                </header>
+                <section>
+                    <input type="file" id="csvFileInput" class="hidden" accept=".csv,.json,.xlsx" />
+                    <div onclick="document.getElementById('csvFileInput').click()"
+                        class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted-slate bg-white/5 hover:bg-white/[0.08] hover:border-primary/50 transition-all py-16 px-6 cursor-pointer">
+                        <div
+                            class="size-20 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:-translate-y-2 transition-transform duration-300">
+                            <span class="material-symbols-outlined text-4xl">upload_file</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white text-center mb-2">Drop data files to start analysis</h3>
+                        <p class="text-slate-400 text-sm text-center mb-6 max-w-sm">
+                            Automated mapping for OHLCV, Sentiment scores, and Custom Quant indicators.
+                        </p>
+                        <button
+                            class="px-8 py-3 bg-primary text-bg-dark font-bold rounded-xl hover:shadow-[0_0_20px_rgba(13,242,89,0.4)] transition-all pointer-events-none">
+                            Select File
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Inline result banner — injected by JS, no alert() blocking -->
+                <div id="upload-result" class="hidden flex items-start gap-3 rounded-xl p-4 border text-sm font-semibold"></div>
+
+                <script>
+                    const csvInput = document.getElementById('csvFileInput');
+                    const resultBanner = document.getElementById('upload-result');
+                    const previewTbody = document.getElementById('preview-tbody');
+
+                    csvInput.addEventListener('change', async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+
+                        // Hide previous result
+                        resultBanner.className = 'hidden';
+
+                        // --- Client-side CSV preview (instant, no upload needed) ---
+                        const text = await file.text();
+                        const lines = text.trim().split('\n');
+                        if (lines.length > 1) {
+                            const headers = lines[0].split(',').map(h => h.trim());
+                            const dateIdx = headers.findIndex(h => /date/i.test(h));
+                            const openIdx = headers.findIndex(h => /open/i.test(h));
+                            const closeIdx = headers.findIndex(h => /close/i.test(h));
+                            previewTbody.innerHTML = lines.slice(1, 6).map(line => {
+                                const cols = line.split(',');
+                                const d = dateIdx >= 0 ? cols[dateIdx]?.trim() : cols[0]?.trim();
+                                const o = openIdx >= 0 ? cols[openIdx]?.trim() : cols[1]?.trim();
+                                const c = closeIdx >= 0 ? cols[closeIdx]?.trim() : cols[cols.length - 1]?.trim();
+                                return `<tr class="hover:bg-white/[0.02] text-sm text-slate-400">
+                                    <td class="px-6 py-3">${d ?? ''}</td>
+                                    <td class="px-6 py-3">${o ?? ''}</td>
+                                    <td class="px-6 py-3 font-bold text-primary">${c ?? ''}</td>
+                                </tr>`;
+                            }).join('');
+                        }
+
+                        // --- Upload to backend ---
+                        const formData = new FormData();
+                        formData.append('dataset', file);
+
+                        const btn = e.target.closest('section').querySelector('button');
+                        const uploadIcon = btn.closest('.flex-col').querySelector('.material-symbols-outlined');
+                        btn.textContent = 'Ingesting & Analyzing...';
+                        if (uploadIcon) uploadIcon.textContent = 'hourglass_top';
+
+                        try {
+                            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+                            if (!response.ok) {
+                                const err = await response.json().catch(() => ({}));
+                                throw new Error(err.error || `Server error ${response.status}`);
+                            }
+                            const result = await response.json();
+                            resultBanner.className = 'flex items-start gap-3 rounded-xl p-4 border bg-green-500/10 border-green-500/20 text-primary text-sm font-semibold';
+                            resultBanner.innerHTML = `<span class="material-symbols-outlined text-lg shrink-0">check_circle</span>
+                                <div>
+                                    <p>Successfully processed <strong>${result.rowsProcessed}</strong> rows.</p>
+                                    ${result.predictions?.[0]?.predictedClose != null
+                                        ? `<p class="text-xs font-normal text-slate-300 mt-1">AI Prediction (Next Day Close): <strong class="text-primary">$${Number(result.predictions[0].predictedClose).toFixed(2)}</strong></p>`
+                                        : ''}
+                                </div>`;
+                        } catch (err) {
+                            resultBanner.className = 'flex items-start gap-3 rounded-xl p-4 border bg-red-500/10 border-red-500/20 text-red-400 text-sm font-semibold';
+                            resultBanner.innerHTML = `<span class="material-symbols-outlined text-lg shrink-0">error</span><p>${err.message}</p>`;
+                        } finally {
+                            btn.textContent = 'Select File';
+                            if (uploadIcon) uploadIcon.textContent = 'upload_file';
+                            csvInput.value = '';
+                        }
+                    });
+                </script>
+
+                <section class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-white">Live Mapping Preview</h3>
+                    </div>
+                    <div class="overflow-hidden rounded-xl border border-border-subtle bg-panel-dark overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white/5 border-b border-border-subtle text-slate-300 text-sm">
+                                    <th class="px-6 py-4">Date</th>
+                                    <th class="px-6 py-4">Open</th>
+                                    <th class="px-6 py-4">Close</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-tbody" class="divide-y divide-border-subtle">
+                                <tr class="hover:bg-white/[0.02] text-sm text-slate-400">
+                                    <td class="px-6 py-3">2023-11-01</td>
+                                    <td class="px-6 py-3">170.91</td>
+                                    <td class="px-6 py-3 font-bold text-primary">173.00</td>
+                                </tr>
+                                <tr class="hover:bg-white/[0.02] text-sm text-slate-400">
+                                    <td class="px-6 py-3">2023-10-31</td>
+                                    <td class="px-6 py-3">173.05</td>
+                                    <td class="px-6 py-3 font-bold text-primary">173.44</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

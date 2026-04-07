@@ -1,0 +1,190 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import LiveChart from '../components/LiveChart';
+import { useWebSocket } from '../hooks/useWebSocket';
+
+export default function Dashboard() {
+    const navigate = useNavigate();
+    const { data: wsData, isConnected } = useWebSocket('ws://localhost:3005');
+
+    const [marketDelta, setMarketDelta] = useState(0);
+    const [startPrice, setStartPrice] = useState(null);
+    const [uploadHistory, setUploadHistory] = useState([]);
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/uploads', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setUploadHistory(data);
+                } else {
+                    throw new Error("Server response not ok");
+                }
+            } catch (err) {
+                console.warn("Backend unreachable, loading simulation history...");
+                setUploadHistory([
+                    { id: '1', filename: 'NASDAQ_AAPL_MOCK.csv', prediction: '185.20', rowsProcessed: 12500, timestamp: '2026-04-07 09:00', createdAt: new Date().toISOString() },
+                    { id: '2', filename: 'CRYPTO_BTC_MOCK.csv', prediction: '64200.50', rowsProcessed: 89000, timestamp: '2026-04-07 08:30', createdAt: new Date().toISOString() }
+                ]);
+            }
+        };
+        fetchHistory();
+        const intervalId = setInterval(fetchHistory, 5000); // Check for new uploads every 5s
+        return () => clearInterval(intervalId);
+    }, []);
+
+    useEffect(() => {
+        if (wsData && wsData.type === 'tick') {
+            const currentPrice = wsData.close;
+            if (!startPrice) {
+                setStartPrice(wsData.open);
+            } else {
+                const delta = ((currentPrice - startPrice) / startPrice) * 100;
+                setMarketDelta(delta);
+            }
+        }
+    }, [wsData, startPrice]);
+
+    return (
+        <main className="flex-1 flex flex-col overflow-hidden bg-bg-dark h-[100vh]">
+            <header className="h-16 flex-shrink-0 flex items-center justify-between px-8 border-b border-border-subtle sticky top-0 bg-bg-dark/90 backdrop-blur-md z-10 w-full">
+                <div className="flex items-center gap-8 flex-1">
+                    <div>
+                        <h2 className="text-sm font-bold text-white uppercase tracking-wider">Refined Market Dashboard</h2>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className={`size-1.5 rounded-full ${isConnected ? 'bg-primary shadow-[0_0_8px_#0df259]' : 'bg-crimson-red shadow-[0_0_8px_#ff4d4d]'}`}></span>
+                            <p className="text-[10px] text-slate-muted uppercase font-bold tracking-widest">
+                                {isConnected ? 'Live Feed Active' : 'Connecting to Core...'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar w-full relative">
+                <section>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-[11px] font-bold text-slate-muted uppercase tracking-[0.25em]">Performance at a Glance</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="border-b md:border-b-0 md:border-r border-border-subtle pb-4 md:pb-0 md:pr-6">
+                            <p className="text-[10px] font-bold text-slate-muted uppercase tracking-widest mb-2">Total Predictions</p>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-bold tracking-tight text-white">12,482</span>
+                                <span className="text-[10px] font-bold text-primary">+12.4%</span>
+                            </div>
+                        </div>
+                        <div className="border-b md:border-b-0 md:border-r border-border-subtle pb-4 md:pb-0 md:pr-6 md:pl-2">
+                            <p className="text-[10px] font-bold text-slate-muted uppercase tracking-widest mb-2">System Load</p>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-bold tracking-tight text-white">24.8%</span>
+                                <span className="text-[10px] font-bold text-slate-muted">Nominal</span>
+                            </div>
+                        </div>
+                        <div className="border-b md:border-b-0 md:border-r border-border-subtle pb-4 md:pb-0 md:pr-6 md:pl-2">
+                            <p className="text-[10px] font-bold text-slate-muted uppercase tracking-widest mb-2">Market Delta</p>
+                            <div className="flex items-baseline gap-2">
+                                <span className={`text-2xl font-bold tracking-tight ${marketDelta >= 0 ? 'text-primary' : 'text-crimson-red'}`}>
+                                    {marketDelta >= 0 ? '+' : ''}{marketDelta.toFixed(2)}%
+                                </span>
+                                <span className={`text-[10px] font-bold ${marketDelta >= 0 ? 'text-primary' : 'text-crimson-red'}`}>
+                                    {marketDelta >= 0 ? '+' : '-'}{Math.abs(marketDelta + (marketDelta >= 0 ? -0.01 : 0.01)).toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+                        <div className="md:pl-2">
+                            <p className="text-[10px] font-bold text-slate-muted uppercase tracking-widest mb-2">Signal Strength</p>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-bold tracking-tight text-primary">84.0</span>
+                                <span className="text-[10px] font-bold text-primary/60">High</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div className="bg-white/[0.01] rounded-xl border border-border-subtle flex flex-col overflow-hidden relative">
+                    <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+                        <div>
+                            <h3 className="text-sm font-bold text-white uppercase tracking-tight">Intraday Momentum</h3>
+                            <p className="text-xs text-slate-muted mt-0.5 font-medium">S&amp;P 500 Composite AI Feed (Real-time)</p>
+                        </div>
+                        <div className="flex bg-white/[0.02] p-0.5 rounded border border-border-subtle">
+                            <button className="px-3 py-1 text-[10px] font-bold rounded text-slate-muted hover:text-white md:block hidden transition-colors uppercase">1H</button>
+                            <button className="px-3 py-1 text-[10px] font-bold rounded bg-white/5 text-white uppercase">1D</button>
+                        </div>
+                    </div>
+                    <div className="relative h-[350px] w-full border-t border-border-subtle overflow-hidden">
+                        <LiveChart wsData={wsData} />
+                    </div>
+                </div>
+
+                <div className="bg-white/[0.01] rounded-xl border border-border-subtle overflow-hidden">
+                    <div className="px-8 py-5 border-b border-border-subtle flex items-center justify-between">
+                        <div>
+                            <h3 className="text-sm font-bold text-white uppercase tracking-tight">Recent Data Pipelines</h3>
+                        </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-white/[0.02] text-[10px] font-bold text-slate-muted uppercase tracking-widest">
+                                <tr>
+                                    <th className="px-8 py-3 border-b border-border-subtle">Resource Name</th>
+                                    <th className="px-8 py-3 border-b border-border-subtle hidden md:table-cell">Timestamp</th>
+                                    <th className="px-8 py-3 border-b border-border-subtle">Status</th>
+                                    <th className="px-8 py-3 border-b border-border-subtle text-right">Data Points</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border-subtle">
+                                {uploadHistory.length > 0 ? (
+                                    uploadHistory.map((upload) => (
+                                        <tr 
+                                            key={upload.id} 
+                                            className="hover:bg-white/[0.04] transition-all group cursor-pointer active:brightness-95"
+                                            onClick={() => navigate('/prediction', { 
+                                                state: { 
+                                                    historicalPrediction: upload.prediction,
+                                                    filename: upload.filename,
+                                                    rows: upload.rowsProcessed,
+                                                    timestamp: upload.createdAt
+                                                } 
+                                            })}
+                                        >
+                                            <td className="px-8 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="size-8 rounded bg-white/5 flex items-center justify-center text-slate-muted group-hover:text-primary transition-colors">
+                                                        <span className="material-symbols-outlined">description</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="block text-sm font-semibold text-white/90">{upload.filename}</span>
+                                                        <span className="text-[10px] text-slate-600 font-mono">#INGEST-{upload.id.toString().slice(-4)}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-4 text-xs text-slate-400 font-medium hidden md:table-cell">{upload.timestamp}</td>
+                                            <td className="px-8 py-4">
+                                                <span className="status-badge bg-primary/5 text-primary border-primary/20">
+                                                    Ready
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-4 text-right font-mono text-xs text-slate-400">{upload.rowsProcessed.toLocaleString()}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="4" className="px-8 py-8 text-center text-slate-500 text-sm">
+                                            No data pipelines processed yet.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    );
+}

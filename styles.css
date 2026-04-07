@@ -1,0 +1,104 @@
+/* Combined styles from the 4 HTML pages */
+
+:root {
+  --bg-main: #0d1117;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-main);
+  @apply bg-[#0d1117] text-slate-100 font-sans antialiased;
+  background-image:
+    radial-gradient(circle at 50% -20%, rgba(13, 242, 89, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(13, 242, 89, 0.02) 0%, transparent 30%);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  @apply bg-[#30363d] rounded-full hover:bg-neutral-400 transition-colors;
+}
+
+/* Prediction Engine specifics */
+.chart-grid {
+  background-image: linear-gradient(to right, #30363d 1px, transparent 1px),
+    linear-gradient(to bottom, #30363d 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.glass-panel {
+  @apply bg-[#161b22]/80 backdrop-blur-md border border-[#30363d];
+}
+
+/* Data upload specifics */
+.sketchy-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Overview specifics */
+.status-badge {
+  @apply flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border;
+}
+
+/* Registration specifics */
+.glass-card-subtle {
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
+}
+
+.custom-checkbox:checked+label .check-box {
+  @apply bg-[#0df259] border-[#0df259];
+}
+
+.custom-checkbox:checked+label .check-icon {
+  @apply scale-100 opacity-100;
+}
+
+.strength-meter-bar {
+  @apply h-1 flex-1 rounded-full transition-all duration-500 ease-out;
+}
+
+/* View switching classes */
+.view-container {
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+
+.view-container.active {
+  display: flex !important;
+  flex-direction: row; /* sidebar + main side by side */
+}
+
+.page-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Registration view needs column layout since it has no sidebar */
+#view-registration.active {
+  flex-direction: column;
+}
