@@ -1,0 +1,298 @@
+:root {
+    --bg-main: #0c0d14;
+    --bg-panel: rgba(22, 24, 34, 0.7);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --text-primary: #ffffff;
+    --text-secondary: #8c90a1;
+    --accent-up: #00d26a;
+    --accent-down: #f84960;
+    --accent-neutral: #007bff;
+    --font-main: 'Inter', sans-serif;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    height: 100vh;
+    overflow: hidden;
+    /* Prevent scroll on main dashboard */
+}
+
+/* Background gradient for depth */
+body::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 123, 255, 0.05) 0%, transparent 40%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Top Navigation */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: var(--bg-panel);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--accent-up);
+    box-shadow: 0 0 10px rgba(0, 210, 106, 0.6);
+    animation: pulse-anim 2s infinite;
+}
+
+@keyframes pulse-anim {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 210, 106, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(0, 210, 106, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 210, 106, 0);
+    }
+}
+
+.connection-status {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 12px;
+    border-radius: 12px;
+}
+
+.connection-status.connected {
+    color: var(--accent-up);
+    background: rgba(0, 210, 106, 0.1);
+}
+
+/* Main Content Area */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    padding: 24px;
+    gap: 24px;
+}
+
+/* Sidebar Stats */
+.sidebar-stats {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.stat-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.live-price-card .price {
+    font-size: 2.5rem;
+    font-variant-numeric: tabular-nums;
+    /* Keeps numbers aligned when rapidly updating */
+}
+
+.price.up {
+    color: var(--accent-up);
+}
+
+.price.down {
+    color: var(--accent-down);
+}
+
+.price-change {
+    margin-top: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.price-change.up {
+    color: var(--accent-up);
+}
+
+.price-change.down {
+    color: var(--accent-down);
+}
+
+.indicator-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 1rem;
+}
+
+.indicator-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Trading Signal Engine */
+.signal-container {
+    text-align: center;
+    border-top: 2px solid transparent;
+    /* Used for highlight color */
+}
+
+.signal-badge {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 12px 0;
+    letter-spacing: 1px;
+}
+
+.signal-badge.buy {
+    background: rgba(0, 210, 106, 0.2);
+    color: var(--accent-up);
+    border: 1px solid var(--accent-up);
+}
+
+.signal-badge.sell {
+    background: rgba(248, 73, 96, 0.2);
+    color: var(--accent-down);
+    border: 1px solid var(--accent-down);
+}
+
+.signal-badge.neutral {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.signal-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Chart Section */
+.chart-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.chart-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.chart-container {
+    width: 100%;
+    height: 500px;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Chart Legend Colors */
+.legend {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.color-box {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.color-box.candle {
+    background: linear-gradient(135deg, var(--accent-up) 50%, var(--accent-down) 50%);
+}
+
+.color-box.sma {
+    background: #E6A23C;
+}
+
+/* Match TradingView default SMA color */

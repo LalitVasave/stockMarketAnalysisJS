@@ -31,9 +31,10 @@ export default function Registration() {
                 throw new Error(data.error || 'Authentication failed');
             }
 
-            // Save JWT properly
+            // Save JWT and identity properly
             localStorage.setItem('token', data.token);
             localStorage.setItem('userName', fullName || email.split('@')[0]);
+            localStorage.setItem('userEmail', email);
             navigate('/dashboard');
         } catch (err) {
             setErrorMsg(err.message);
@@ -45,6 +46,7 @@ export default function Registration() {
     const handleDemoAccess = () => {
         localStorage.setItem('token', 'demo_institutional_token');
         localStorage.setItem('userName', fullName || 'Guest Analyst');
+        localStorage.setItem('userEmail', 'guest@quantai.demo');
         navigate('/dashboard');
     };
 

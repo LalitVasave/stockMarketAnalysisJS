@@ -508,9 +508,13 @@
                     document.getElementById('pred-model-label').textContent = model + ' · Processing';
 
                     try {
+                        const token = localStorage.getItem('token');
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+
                         const res = await fetch('/api/predict', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers,
                             body: JSON.stringify({ asset, model, confidence, days: 30 })
                         });
                         if (!res.ok) throw new Error('Server error ' + res.status);
@@ -699,7 +703,15 @@
                         if (uploadIcon) uploadIcon.textContent = 'hourglass_top';
 
                         try {
-                            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+                            const token = localStorage.getItem('token');
+                            const headers = {};
+                            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                            const response = await fetch('/api/upload', { 
+                                method: 'POST', 
+                                headers,
+                                body: formData 
+                            });
                             if (!response.ok) {
                                 const err = await response.json().catch(() => ({}));
                                 throw new Error(err.error || `Server error ${response.status}`);

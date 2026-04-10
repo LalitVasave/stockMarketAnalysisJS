@@ -42,23 +42,21 @@ function calculateSMA(data) {
     const sum = data.reduce((acc, val) => acc + val, 0);
     return sum / data.length;
 }
-
 function generateTick() {
-    const volatility = 0.005;
-    const changePercent = (Math.random() * volatility * 2) - volatility;
-    const isEvent = Math.random() < 0.05;
-    const multiplier = isEvent ? 3 : 1;
+    // Smoother random walk with volatility control
+    const volatility = 0.002; // 0.2% max change per tick
+    const changePercent = (Math.random() - 0.5) * 2 * volatility;
+    
+    const open = currentPrice;
+    currentPrice = open * (1 + changePercent);
+    
+    // Ensure price stays positive and realistic
+    if (currentPrice < 10) currentPrice = 10;
+    
+    const close = currentPrice;
+    const high = Math.max(open, close) + (Math.random() * 0.5);
+    const low = Math.min(open, close) - (Math.random() * 0.5);
 
-    let open = currentPrice;
-    const tickMovement = currentPrice * changePercent * multiplier;
-    let close = currentPrice + tickMovement;
-    let high = Math.max(open, close) + (Math.random() * Math.abs(tickMovement));
-    let low = Math.min(open, close) - (Math.random() * Math.abs(tickMovement));
-
-    if (low < 0) low = 0.01;
-    if (close < 0) close = 0.01;
-
-    currentPrice = close;
     priceHistory.push(close);
     if (priceHistory.length > historyLength) priceHistory.shift();
     const sma = calculateSMA(priceHistory);
@@ -163,14 +161,20 @@ app.post('/api/predict', authenticateToken, (req, res) => {
         Close: (basePrice * (0.98 + Math.random() * 0.04)).toFixed(2),
     }));
 
-    console.log(`Starting Prediction Sequence for ${asset}...`);
+    console.log(`Starting Prediction Sequence for ${asset} (${syntheticDataset.length} rows)...`);
     const worker = new Worker(path.join(__dirname, 'aiWorker.js'), {
         workerData: { dataset: syntheticDataset, days: parseInt(days) }
     });
 
     worker.on('message', (message) => {
         if (message.status === 'complete') {
-            res.json({ asset, model, confidence: parseInt(confidence), predictions: message.predictions });
+            res.json({ 
+                asset, 
+                model, 
+                confidence: parseInt(confidence), 
+                historical: syntheticDataset, // Added historical context
+                predictions: message.predictions 
+            });
         } else if (message.status === 'error') {
             res.status(500).json({ error: 'AI processing failed', details: message.error });
         }
@@ -180,6 +184,34 @@ app.post('/api/predict', authenticateToken, (req, res) => {
         console.error('Worker error:', err);
         res.status(500).json({ error: 'Worker thread error.' });
     });
+});
+
+// --- ADMIN CONTROL ENDPOINTS ---
+app.get('/api/admin/users', authenticateToken, async (req, res) => {
+    try {
+        // In a real app, check for admin role. For demo, we allow authorized users to see.
+        const users = await prisma.user.findMany({
+            include: {
+                _count: {
+                    select: { uploads: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        const formattedUsers = users.map(u => ({
+            id: u.id,
+            email: u.email,
+            joined: u.createdAt,
+            analysisCount: u._count.uploads,
+            status: Math.random() > 0.3 ? 'Online' : 'Offline' // Visual mock for 'Live' feel
+        }));
+
+        res.json(formattedUsers);
+    } catch (err) {
+        console.error('Admin Fetch Error:', err);
+        res.status(500).json({ error: 'Failed to access Admin restricted data' });
+    }
 });
 
 app.post('/api/upload', authenticateToken, upload.single('dataset'), (req, res) => {

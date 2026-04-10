@@ -151,7 +151,16 @@ async function loadPipelinesTable() {
     if (!tbody) return;
 
     try {
-        const res = await fetch('/api/uploads');
+        const token = localStorage.getItem('token');
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch('/api/uploads', { headers });
+        if (res.status === 401) {
+            console.warn("Unauthorized. Redirecting to registration.");
+            window.location.hash = 'registration';
+            return;
+        }
         if (!res.ok) return;
         const history = await res.json();
 
@@ -232,3 +241,40 @@ function navigateTo(routeId) {
         }
     });
 }
+
+// -------------- Authentication ---------------
+// This function can be called to log in a demonstration user
+async function ensureAuthenticated() {
+    const token = localStorage.getItem('token');
+    if (token) return true;
+
+    console.warn("No token found, initializing demo session...");
+    try {
+        const res = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: `demo_${Date.now()}@quantai.internal`,
+                password: 'DemoPassword123!',
+                name: 'Demo Trader'
+            })
+        });
+        const data = await res.json();
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+            console.info("Demo session active.");
+            return true;
+        }
+    } catch (e) {
+        console.error("Auth initialization failed:", e);
+    }
+    return false;
+}
+
+// Automatically try to init auth on registration view if the button is clicked
+document.addEventListener('click', async (e) => {
+    if (e.target.closest('[data-route="dashboard"]')) {
+        await ensureAuthenticated();
+    }
+});
+

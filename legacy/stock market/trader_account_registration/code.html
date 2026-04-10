@@ -1,0 +1,158 @@
+<html class="dark"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&amp;family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b","deep-indigo": "#0d1117","surface-glass": "rgba(255, 255, 255, 0.03)",
+                        "border-glass": "rgba(255, 255, 255, 0.08)",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"],
+                        "body-serif": ["Lora", "serif"],
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-deep-indigo text-slate-200 font-sans antialiased;
+                background-image: 
+                    radial-gradient(circle at 50% -20%, rgba(19, 236, 91, 0.08) 0%, transparent 40%),
+                    radial-gradient(circle at 0% 100%, rgba(19, 236, 91, 0.02) 0%, transparent 30%);
+            }
+        }
+        .glass-card-subtle {
+            background: rgba(255, 255, 255, 0.015);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
+        }
+        .custom-checkbox:checked + label .check-box {
+            @apply bg-primary border-primary;
+        }
+        .custom-checkbox:checked + label .check-icon {
+            @apply scale-100 opacity-100;
+        }
+        .strength-meter-bar {
+            @apply h-1 flex-1 rounded-full transition-all duration-500 ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<nav class="w-full p-10 flex justify-center">
+<div class="flex items-center gap-4">
+<div class="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-deep-indigo shadow-[0_0_20px_rgba(19,236,91,0.3)]">
+<span class="material-symbols-outlined font-bold text-2xl">query_stats</span>
+</div>
+<h1 class="text-2xl font-bold tracking-[0.3em] text-white uppercase">QuantAI</h1>
+</div>
+</nav>
+<main class="flex-grow flex items-center justify-center px-6 py-16">
+<div class="w-full max-w-[580px]">
+<div class="glass-card-subtle rounded-[2rem] p-10 md:p-14 relative overflow-hidden">
+<header class="text-center mb-12">
+<h2 class="text-4xl md:text-5xl font-serif text-white mb-5 font-bold tracking-tight">Secure Analyst Onboarding</h2>
+<p class="text-slate-400 font-body-serif italic text-xl">Enter the high-frequency intelligence perimeter.</p>
+</header>
+<form class="space-y-8" onsubmit="return false;">
+<div class="space-y-3">
+<label class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 ml-1">Full Identity</label>
+<input class="w-full rounded-xl border-white/5 bg-white/5 py-4.5 px-5 text-white placeholder:text-slate-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all text-sm" placeholder="e.g. Alexander Sterling" type="text"/>
+</div>
+<div class="space-y-3">
+<label class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 ml-1">Professional Credential</label>
+<input class="w-full rounded-xl border-white/5 bg-white/5 py-4.5 px-5 text-white placeholder:text-slate-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all text-sm" placeholder="analyst@institutional.com" type="email"/>
+</div>
+<div class="space-y-3">
+<label class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 ml-1">Secure Access Key</label>
+<div class="relative">
+<input class="w-full rounded-xl border-white/5 bg-white/5 py-4.5 px-5 text-white placeholder:text-slate-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all text-sm" placeholder="••••••••••••" type="password"/>
+<span class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 text-xl cursor-pointer hover:text-primary transition-colors">visibility</span>
+</div>
+<div class="pt-3">
+<div class="flex gap-2 mb-3">
+<div class="strength-meter-bar bg-primary"></div>
+<div class="strength-meter-bar bg-primary"></div>
+<div class="strength-meter-bar bg-primary"></div>
+<div class="strength-meter-bar bg-white/10"></div>
+</div>
+<div class="flex justify-between items-center px-1">
+<span class="text-[9px] font-bold uppercase tracking-widest text-primary">Encryption Level: Tier 3</span>
+<span class="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Complex Requirements Met</span>
+</div>
+</div>
+</div>
+<div class="flex items-start gap-4 py-2">
+<div class="relative flex items-center h-6">
+<input class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer z-10" id="terms" type="checkbox"/>
+<label class="flex items-center cursor-pointer" for="terms">
+<span class="check-box w-6 h-6 border border-white/10 rounded-md flex items-center justify-center transition-all duration-200 bg-white/5">
+<span class="material-symbols-outlined check-icon text-deep-indigo text-lg font-bold scale-0 opacity-0 transition-all duration-200">check</span>
+</span>
+</label>
+</div>
+<label class="text-xs text-slate-400 leading-relaxed font-medium" for="terms">
+                            I verify compliance with the <a class="text-white hover:text-primary transition-colors underline underline-offset-4 decoration-white/20" href="#">Institutional Protocols</a> and <a class="text-white hover:text-primary transition-colors underline underline-offset-4 decoration-white/20" href="#">Privacy Governance</a>.
+                        </label>
+</div>
+<button class="w-full rounded-xl bg-primary py-5 text-xs font-bold tracking-[0.25em] uppercase text-deep-indigo shadow-lg shadow-primary/5 hover:shadow-primary/20 hover:brightness-105 transition-all">
+                        Initialize Terminal Access
+                    </button>
+</form>
+<div class="mt-12 text-center">
+<p class="text-xs tracking-wide text-slate-500 font-medium">
+                        Existing Institutional Partner? 
+                        <a class="text-white hover:text-primary transition-colors font-bold ml-1 border-b border-white/20" href="#">Login to Network</a>
+</p>
+</div>
+</div>
+</div>
+</main>
+<footer class="w-full pb-16 px-6 mt-auto">
+<div class="max-w-5xl mx-auto">
+<div class="flex flex-col items-center gap-10">
+<div class="relative w-full flex items-center justify-center">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-white/5"></div>
+</div>
+<span class="relative bg-deep-indigo px-6 text-[10px] uppercase tracking-[0.4em] text-slate-600 font-bold">Trusted by Elite Firms</span>
+</div>
+<div class="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-20 grayscale hover:opacity-40 transition-opacity duration-700">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-2xl">account_balance</span>
+<span class="font-serif text-lg font-bold tracking-tight">KENSINGTON</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-2xl">monitoring</span>
+<span class="font-serif text-lg font-bold tracking-tight">VANGUARD</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-2xl">diamond</span>
+<span class="font-serif text-lg font-bold tracking-tight">AURELIUS</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+<span class="font-serif text-lg font-bold tracking-tight">PEAK CAPITAL</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-2xl">shield_with_heart</span>
+<span class="font-serif text-lg font-bold tracking-tight">PRUDENTIAL</span>
+</div>
+</div>
+</div>
+</div>
+</footer>
+
+</body></html>

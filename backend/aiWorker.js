@@ -66,12 +66,33 @@ class StatisticalForecaster {
 
 async function processData(dataset) {
     if (!dataset || dataset.length === 0) {
-        throw new Error("Empty dataset provided by CSV");
+        throw new Error("Empty dataset provided. Please ensure your CSV has data.");
     }
 
-    const prices = dataset.map(row => row.Close).filter(p => !isNaN(parseFloat(p)));
+    // --- Case-Insensitive Column Mapping ---
+    // We look for "Close", "close", "Price", or "price"
+    const findCloseValue = (row) => {
+        const keys = Object.keys(row);
+        // Look for common price column names (case-insensitive)
+        const targetKeys = ['close', 'price', 'last', 'value', 'settle', 'adj close'];
+        for (const key of keys) {
+            if (targetKeys.includes(key.toLowerCase())) {
+                const val = row[key];
+                if (val !== undefined && val !== null) return val;
+            }
+        }
+        // Direct case-sensitive fallbacks for common defaults
+        return row['Close'] || row['price'] || row['Price'] || row[keys[keys.length - 1]]; 
+    };
+
+    const prices = dataset.map(row => findCloseValue(row)).filter(p => p !== undefined && !isNaN(parseFloat(p)));
     
-    console.log(`Analyzing ${prices.length} data points...`);
+    if (prices.length < 2) {
+        console.error("Mapping failure: No price data found in dataset rows.", dataset[0]);
+        throw new Error("Insufficient data points for analysis. Check if your CSV has a 'Close' or 'Price' column.");
+    }
+
+    console.info(`Successfully mapped ${prices.length} data points from ${dataset.length} original rows.`);
     
     const forecaster = new StatisticalForecaster(prices);
     forecaster.train();

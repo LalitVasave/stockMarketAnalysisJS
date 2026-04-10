@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Advanced Prediction Workspace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#0df259", // Mint Green
+                "accent-blue": "#3b82f6",
+                "background-dark": "#0a0c10",
+                "panel-dark": "#161b22",
+                "border-dark": "#30363d", // Subtle Charcoal
+                "neutral-800": "#1a1f26",
+                "neutral-700": "#21262d",
+                "neutral-600": "#30363d",
+                "neutral-400": "#8b949e",
+                "slate-brand": "#1c2128"
+              },
+              fontFamily: {
+                "sans": ["Inter", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.375rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body { @apply bg-background-dark text-slate-100 font-sans antialiased; }
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                @apply bg-background-dark;
+            }
+            ::-webkit-scrollbar-thumb {
+                @apply bg-neutral-600 rounded-full hover:bg-neutral-400 transition-colors;
+            }
+        }
+        .chart-grid {
+            background-image: linear-gradient(to right, #30363d 1px, transparent 1px),
+                              linear-gradient(to bottom, #30363d 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .glass-panel {
+            @apply bg-panel-dark/80 backdrop-blur-md border border-border-dark;
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-hidden">
+<div class="flex h-screen w-full flex-col">
+<header class="flex items-center justify-between border-b border-border-dark px-6 py-3 bg-panel-dark shrink-0">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="size-9 bg-primary/10 rounded-lg flex items-center justify-center text-primary border border-primary/20">
+<span class="material-symbols-outlined text-2xl font-bold">analytics</span>
+</div>
+<div>
+<h1 class="text-slate-100 text-lg font-bold leading-tight tracking-tight">Advanced Prediction Workspace</h1>
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-primary"></span>
+<span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Unified Engine Active</span>
+</div>
+</div>
+</div>
+<nav class="hidden lg:flex items-center gap-6 ml-4">
+<a class="text-primary text-sm font-semibold relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary" href="#">Workspace</a>
+<a class="text-neutral-400 hover:text-slate-100 text-sm font-medium transition-colors" href="#">Models</a>
+<a class="text-neutral-400 hover:text-slate-100 text-sm font-medium transition-colors" href="#">Archive</a>
+<a class="text-neutral-400 hover:text-slate-100 text-sm font-medium transition-colors" href="#">API</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 bg-slate-brand px-3 py-1.5 rounded border border-border-dark">
+<span class="text-[10px] font-bold text-neutral-400 uppercase tracking-tighter">Global Market:</span>
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-primary"></span>
+<span class="text-xs font-bold text-slate-200">OPEN</span>
+</div>
+</div>
+<div class="h-6 w-px bg-border-dark"></div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-neutral-400 hover:text-primary transition-colors relative group">
+<span class="material-symbols-outlined text-xl">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-panel-dark"></span>
+</button>
+<div class="size-8 rounded bg-neutral-600 border border-border-dark cursor-pointer overflow-hidden">
+<img alt="User" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeijnM2sgtz0BQy8Hkv_LMjyTMfYL1RbuNLN2mTTitpme4LGJwsMngoccU2zYNsNIgpdMOzDDl4pOmRBdeeeVqSHECUq8GtD6GO4FxQgsoCsuRBfjXUb_sv6_Uu2LVHT0pVlonZt95q0tsnvu415eZdLmFTc5f6tLQ7SfRBZE8XLep92hDSswydff99inQJBvhU7T4a4qDKDhX0smUPDcVCQZnCEq6qqAgy9QRN0ZLUQ-olVraalpI9i8G9WgHZezpBu1c2-pG_Y30"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex overflow-hidden">
+<aside class="w-72 border-r border-border-dark bg-panel-dark flex flex-col shrink-0">
+<div class="p-5 space-y-6 flex-1 overflow-y-auto">
+<div class="space-y-4">
+<h3 class="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Model Configuration</h3>
+<div class="space-y-2">
+<label class="text-xs text-slate-300 font-medium">Asset Pair</label>
+<div class="relative group">
+<select class="w-full bg-background-dark border border-border-dark rounded py-2 px-3 text-sm text-slate-100 focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
+<option>BTC / USD</option>
+<option>ETH / USD</option>
+<option>NASDAQ: AAPL</option>
+<option>S&amp;P 500 Index</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 text-lg pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs text-slate-300 font-medium">Primary AI Architecture</label>
+<div class="relative group">
+<select class="w-full bg-background-dark border border-border-dark rounded py-2 px-3 text-sm text-slate-100 focus:ring-1 focus:ring-primary appearance-none">
+<option>Temporal LSTM v4.2</option>
+<option>Transformer-RT Core</option>
+<option>Gaussian Process</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 text-lg pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="py-3 px-3 bg-slate-brand border border-border-dark rounded-lg space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold text-slate-200">Model Comparison</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-8 h-4 bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] text-neutral-400 uppercase font-bold tracking-tighter">Overlay Secondary</label>
+<div class="relative group">
+<select class="w-full bg-background-dark/50 border border-border-dark rounded py-1.5 px-2 text-xs text-slate-100 focus:ring-1 focus:ring-accent-blue appearance-none">
+<option>Transformer-RT Core</option>
+<option>XGBoost Ensemble</option>
+<option>Bayesian Regression</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 text-sm pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-4 pt-2">
+<h3 class="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Compute Parameters</h3>
+<div class="space-y-4">
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[10px] font-bold uppercase">
+<span class="text-neutral-400">Confidence Threshold</span>
+<span class="text-primary">92%</span>
+</div>
+<input class="w-full h-1 bg-border-dark rounded-lg appearance-none cursor-pointer accent-primary" type="range" value="92"/>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[10px] font-bold uppercase">
+<span class="text-neutral-400">Simulation Depth</span>
+<span class="text-slate-200">2.5k</span>
+</div>
+<input class="w-full h-1 bg-border-dark rounded-lg appearance-none cursor-pointer accent-primary" type="range" value="45"/>
+</div>
+</div>
+</div>
+</div>
+<div class="p-5 border-t border-border-dark bg-slate-brand">
+<button class="group relative w-full bg-primary hover:bg-primary/90 text-background-dark py-2.5 rounded font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-xl group-[.loading]:block hidden animate-spin">sync</span>
+<span class="material-symbols-outlined text-xl group-[.loading]:hidden">query_stats</span>
+<span class="text-sm">Run Analysis</span>
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-border-dark">
+                        Executes multi-model forecast (Cmd+Enter)
+                    </div>
+</button>
+<p class="text-[10px] text-center text-neutral-500 mt-3 font-medium uppercase tracking-tighter">System Ready • v4.8.1</p>
+</div>
+</aside>
+<section class="flex-1 flex flex-col bg-background-dark relative overflow-hidden">
+<div class="flex items-center justify-between px-6 py-3 border-b border-border-dark bg-panel-dark/30">
+<div class="flex items-center gap-1 p-1 bg-slate-brand border border-border-dark rounded">
+<button class="px-3 py-1 text-[10px] font-bold text-neutral-400 hover:text-slate-100 transition-colors uppercase">1D</button>
+<button class="px-3 py-1 text-[10px] font-bold text-neutral-400 hover:text-slate-100 transition-colors uppercase">1W</button>
+<button class="px-3 py-1 text-[10px] font-bold bg-neutral-600 text-slate-100 rounded uppercase">1M</button>
+<button class="px-3 py-1 text-[10px] font-bold text-neutral-400 hover:text-slate-100 transition-colors uppercase">3M</button>
+<button class="px-3 py-1 text-[10px] font-bold text-neutral-400 hover:text-slate-100 transition-colors uppercase">All</button>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-neutral-600"></span>
+<span class="text-[10px] text-neutral-400 font-bold uppercase">Historical</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(13,242,89,0.3)]"></span>
+<span class="text-[10px] text-neutral-400 font-bold uppercase">LSTM Prediction</span>
+</div>
+<div class="flex items-center gap-2 border-l border-border-dark pl-4">
+<span class="w-2.5 h-2.5 rounded-full bg-accent-blue shadow-[0_0_8px_rgba(59,130,246,0.3)]"></span>
+<span class="text-[10px] text-neutral-400 font-bold uppercase">T-RT Core</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-1 relative p-8">
+<div class="w-full h-full relative chart-grid border-l border-b border-border-dark flex flex-col">
+<svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 1000 400">
+<path d="M0,350 L100,320 L200,330 L300,280 L400,300 L500,240 L600,260 L650,220" fill="none" stroke="#8b949e" stroke-linecap="round" stroke-width="1.5"></path>
+<path d="M650,220 L700,200 L750,230 L800,180 L850,160 L900,190 L1000,120" fill="none" stroke="#0df259" stroke-dasharray="6,4" stroke-linecap="round" stroke-width="2"></path>
+<path d="M650,220 L700,240 L750,220 L800,250 L850,240 L900,260 L1000,250" fill="none" opacity="0.6" stroke="#3b82f6" stroke-dasharray="6,4" stroke-linecap="round" stroke-width="2"></path>
+<circle class="shadow-lg shadow-primary/20" cx="650" cy="220" fill="#0df259" r="5"></circle>
+<line opacity="0.2" stroke="#0df259" stroke-dasharray="4,4" stroke-width="1" x1="650" x2="650" y1="0" y2="400"></line>
+<circle class="cursor-pointer" cx="300" cy="280" fill="#161b22" r="4" stroke="#0df259" stroke-width="2"></circle>
+<circle class="cursor-pointer" cx="800" cy="180" fill="#161b22" r="4" stroke="#3b82f6" stroke-width="2"></circle>
+</svg>
+<div class="absolute left-[-45px] top-0 bottom-0 flex flex-col justify-between text-[10px] text-neutral-500 font-mono py-1">
+<span>42,000</span><span>40,000</span><span>38,000</span><span>36,000</span><span>34,000</span>
+</div>
+<div class="absolute bottom-[-30px] left-0 right-0 flex justify-between text-[10px] text-neutral-500 font-mono px-2">
+<span>DEC 23</span><span>JAN 24</span><span class="text-primary font-bold">FEB (NOW)</span><span class="text-primary font-bold">MAR (PREDICT)</span>
+</div>
+<div class="absolute top-10 left-[670px] bg-slate-brand border border-border-dark p-3 rounded shadow-2xl backdrop-blur-sm pointer-events-none">
+<p class="text-[10px] text-neutral-400 font-mono mb-1 uppercase">Target: March 12, 2024</p>
+<div class="space-y-1">
+<div class="flex justify-between gap-6">
+<span class="text-xs text-slate-300">LSTM Forecast:</span>
+<span class="text-xs text-primary font-bold">$40,245.00</span>
+</div>
+<div class="flex justify-between gap-6">
+<span class="text-xs text-slate-300">T-RT Forecast:</span>
+<span class="text-xs text-accent-blue font-bold">$37,190.50</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-8 pb-6 grid grid-cols-4 gap-4 shrink-0">
+<div class="bg-panel-dark/40 border border-border-dark rounded-lg p-4">
+<p class="text-[10px] text-neutral-400 uppercase font-bold tracking-wider mb-1">Architecture Delta</p>
+<p class="text-lg font-bold text-slate-100">+4.12% <span class="text-xs font-normal text-neutral-500">Var</span></p>
+</div>
+<div class="bg-panel-dark/40 border border-border-dark rounded-lg p-4">
+<p class="text-[10px] text-neutral-400 uppercase font-bold tracking-wider mb-1">Signal Strength</p>
+<div class="flex items-center gap-2">
+<p class="text-lg font-bold text-primary">STRONG</p>
+<span class="material-symbols-outlined text-primary text-sm">verified</span>
+</div>
+</div>
+<div class="bg-panel-dark/40 border border-border-dark rounded-lg p-4">
+<p class="text-[10px] text-neutral-400 uppercase font-bold tracking-wider mb-1">Volatility Index</p>
+<p class="text-lg font-bold text-slate-100">14.2% <span class="text-xs font-normal text-neutral-500">Normal</span></p>
+</div>
+<div class="bg-panel-dark/40 border border-border-dark rounded-lg p-4">
+<p class="text-[10px] text-neutral-400 uppercase font-bold tracking-wider mb-1">Backtest Score</p>
+<p class="text-lg font-bold text-slate-100">0.88 <span class="text-xs font-normal text-neutral-500">Alpha</span></p>
+</div>
+</div>
+</section>
+<aside class="w-80 border-l border-border-dark bg-panel-dark flex flex-col shrink-0">
+<div class="p-4 border-b border-border-dark flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-neutral-400 text-lg">edit_note</span>
+<h3 class="text-xs font-bold text-slate-200 uppercase tracking-widest">Observations</h3>
+</div>
+<button class="text-primary hover:bg-primary/10 p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-xl">add</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-4">
+<div class="group border border-border-dark hover:border-neutral-400 rounded-lg p-3 bg-background-dark/30 transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">JAN 15, 2024</span>
+<span class="material-symbols-outlined text-neutral-600 text-sm">more_horiz</span>
+</div>
+<p class="text-xs text-slate-400 leading-relaxed italic">"Potential consolidation detected before 200-day EMA breakout. Forecast lines converge at late March."</p>
+<div class="mt-2 pt-2 border-t border-border-dark/50 flex items-center justify-between">
+<span class="text-[10px] text-neutral-500 font-bold uppercase tracking-tighter">Reference: LSTM</span>
+</div>
+</div>
+<div class="group border border-border-dark hover:border-neutral-400 rounded-lg p-3 bg-background-dark/30 transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-mono text-accent-blue bg-accent-blue/10 px-1.5 py-0.5 rounded">FEB 28, 2024</span>
+<span class="material-symbols-outlined text-neutral-600 text-sm">more_horiz</span>
+</div>
+<p class="text-xs text-slate-400 leading-relaxed italic">"Variance spike noted between Transformer and LSTM models. Likely due to earnings report volatility."</p>
+</div>
+<div class="pt-2">
+<div class="relative">
+<textarea class="w-full bg-background-dark/50 border border-border-dark rounded-lg p-3 text-xs text-slate-300 placeholder:text-neutral-600 focus:ring-1 focus:ring-primary focus:border-primary min-h-[140px] resize-none" placeholder="Type observation linked to selected date..."></textarea>
+<div class="absolute bottom-3 right-3">
+<button class="bg-neutral-800 text-slate-300 text-[10px] px-3 py-1.5 rounded border border-border-dark font-bold hover:bg-neutral-700 transition-colors uppercase tracking-tight">Save Linked Note</button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-border-dark bg-background-dark/30">
+<div class="flex items-center gap-3 text-neutral-500 mb-3">
+<span class="material-symbols-outlined text-sm">history</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Session Activity</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<span class="text-[10px] text-neutral-500 font-medium">Prediction refreshed • 2m ago</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-neutral-600"></div>
+<span class="text-[10px] text-neutral-500 font-medium">Parameters updated • 14m ago</span>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<footer class="px-6 py-2 border-t border-border-dark bg-panel-dark text-[10px] text-neutral-500 flex justify-between items-center shrink-0">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-primary">bolt</span>
+<span class="uppercase font-bold tracking-tight">Neural Compute Accelerator: ACTIVE</span>
+</div>
+<div class="h-3 w-px bg-border-dark"></div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">security</span>
+<span class="uppercase font-bold tracking-tight">Encrypted Session</span>
+</div>
+</div>
+<div class="flex items-center gap-4 font-mono">
+<span>REGION: US-EAST-01</span>
+<span class="text-neutral-600">v4.8.1-REL</span>
+</div>
+</footer>
+</div>
+
+</body></html>

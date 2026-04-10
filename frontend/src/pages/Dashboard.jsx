@@ -10,28 +10,39 @@ export default function Dashboard() {
     const [marketDelta, setMarketDelta] = useState(0);
     const [startPrice, setStartPrice] = useState(null);
     const [uploadHistory, setUploadHistory] = useState([]);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [userName, setUserName] = useState('Analyst');
 
     useEffect(() => {
+        const stored = localStorage.getItem('userName');
+        if (stored) setUserName(stored);
+        
         const fetchHistory = async () => {
             try {
                 const token = localStorage.getItem('token');
+                if (!token) return;
+
                 const res = await fetch('/api/uploads', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    setUploadHistory(data);
-                } else {
-                    throw new Error("Server response not ok");
+
+                if (res.status === 401 || res.status === 403) {
+                    console.warn("Session expired or unauthorized. Redirecting to login...");
+                    localStorage.removeItem('token');
+                    window.location.href = '/registration';
+                    return;
                 }
+
+                if (!res.ok) throw new Error('Network error');
+                const data = await res.json();
+                setUploadHistory(data);
             } catch (err) {
-                console.warn("Backend unreachable, loading simulation history...");
-                setUploadHistory([
-                    { id: '1', filename: 'NASDAQ_AAPL_MOCK.csv', prediction: '185.20', rowsProcessed: 12500, timestamp: '2026-04-07 09:00', createdAt: new Date().toISOString() },
-                    { id: '2', filename: 'CRYPTO_BTC_MOCK.csv', prediction: '64200.50', rowsProcessed: 89000, timestamp: '2026-04-07 08:30', createdAt: new Date().toISOString() }
-                ]);
+                console.error('History fetch failed:', err);
+            } finally {
+                setIsInitialLoad(false);
             }
         };
+
         fetchHistory();
         const intervalId = setInterval(fetchHistory, 5000); // Check for new uploads every 5s
         return () => clearInterval(intervalId);
@@ -56,8 +67,8 @@ export default function Dashboard() {
                     <div>
                         <h2 className="text-sm font-bold text-white uppercase tracking-wider">Refined Market Dashboard</h2>
                         <div className="flex items-center gap-2 mt-0.5">
-                            <span className={`size-1.5 rounded-full ${isConnected ? 'bg-primary shadow-[0_0_8px_#0df259]' : 'bg-crimson-red shadow-[0_0_8px_#ff4d4d]'}`}></span>
-                            <p className="text-[10px] text-slate-muted uppercase font-bold tracking-widest">
+                            <span className={`size-1.5 rounded-full ${isConnected ? 'bg-primary shadow-[0_0_8px_#0df259] animate-pulse-soft' : 'bg-crimson-red shadow-[0_0_8px_#ff4d4d]'}`}></span>
+                            <p className="text-[10px] text-slate-muted uppercase font-bold tracking-widest transition-opacity duration-300">
                                 {isConnected ? 'Live Feed Active' : 'Connecting to Core...'}
                             </p>
                         </div>
@@ -66,6 +77,14 @@ export default function Dashboard() {
             </header>
 
             <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar w-full relative">
+                <section className="animate-in fade-in slide-in-from-top-4 duration-700">
+                    <div className="flex flex-col gap-1 mb-8">
+                        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">System Intelligence Ready</p>
+                        <h1 className="text-3xl font-bold text-white tracking-tight">Welcome back, {userName}</h1>
+                        <p className="text-sm text-slate-500 font-medium">Your institutional analysis perimeter is active and secure.</p>
+                    </div>
+                </section>
+
                 <section>
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-[11px] font-bold text-slate-muted uppercase tracking-[0.25em]">Performance at a Glance</h3>
@@ -139,7 +158,16 @@ export default function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-subtle">
-                                {uploadHistory.length > 0 ? (
+                                {isInitialLoad ? (
+                                    [1, 2, 3].map(i => (
+                                        <tr key={i} className="animate-shimmer">
+                                            <td className="px-8 py-4"><div className="h-10 bg-white/5 rounded-md w-48"></div></td>
+                                            <td className="px-8 py-4 hidden md:table-cell"><div className="h-4 bg-white/5 rounded-md w-32"></div></td>
+                                            <td className="px-8 py-4"><div className="h-6 bg-white/5 rounded-full w-20"></div></td>
+                                            <td className="px-8 py-4 text-right"><div className="h-4 bg-white/5 rounded-md w-16 ml-auto"></div></td>
+                                        </tr>
+                                    ))
+                                ) : uploadHistory.length > 0 ? (
                                     uploadHistory.map((upload) => (
                                         <tr 
                                             key={upload.id} 

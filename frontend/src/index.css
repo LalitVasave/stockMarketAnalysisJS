@@ -8,10 +8,32 @@
   body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-main);
-    @apply bg-[#0d1117] text-slate-100 font-sans antialiased;
+    image-rendering: optimizeSpeed;
+    @apply bg-[#0d1117] text-slate-100 font-sans antialiased overflow-x-hidden;
     background-image:
-      radial-gradient(circle at 50% -20%, rgba(13, 242, 89, 0.08) 0%, transparent 40%),
-      radial-gradient(circle at 0% 100%, rgba(13, 242, 89, 0.02) 0%, transparent 30%);
+      radial-gradient(circle at 50% -20%, rgba(13, 242, 89, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 0% 100%, rgba(13, 242, 89, 0.01) 0%, transparent 30%);
+  }
+
+  @keyframes pulse-soft {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.15); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s infinite ease-in-out;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
   }
 
   /* Custom Scrollbars */
@@ -50,11 +72,15 @@
   }
 
   .glass-card-subtle {
-    background: rgba(255, 255, 255, 0.015);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
+    background: rgba(255, 255, 255, 0.012);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7);
+  }
+
+  .chart-overlay {
+    @apply absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0d1117]/60 backdrop-blur-sm transition-opacity duration-500;
   }
 
   .custom-checkbox:checked+label .check-box {

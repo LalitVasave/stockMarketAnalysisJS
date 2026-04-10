@@ -14,7 +14,7 @@ export default function LiveChart({ wsData }) {
                 width: chartContainerRef.current.clientWidth || 400,
                 height: chartContainerRef.current.clientHeight || 300,
                 layout: {
-                    background: { type: 'solid', color: '#0a0c10' }, // Match bg-dark
+                    background: { type: 'solid', color: 'transparent' },
                     textColor: '#64748b',
                 },
                 grid: {
@@ -28,10 +28,10 @@ export default function LiveChart({ wsData }) {
                 timeScale: {
                     borderColor: 'rgba(255, 255, 255, 0.06)',
                     timeVisible: true,
-                    secondsVisible: false,
                 },
             });
 
+            // Reverting to the more universal addSeries pattern for cross-version stability
             const cSeries = chart.addSeries(CandlestickSeries, {
                 upColor: '#0df259',
                 downColor: '#ff4d4d',
@@ -59,6 +59,7 @@ export default function LiveChart({ wsData }) {
                     chart.remove();
                 }
                 chartRef.current = null;
+                seriesRef.current = null;
             };
         } catch (error) {
             console.error("Error creating LiveChart:", error);
@@ -66,22 +67,41 @@ export default function LiveChart({ wsData }) {
     }, []); // Only run once on mount
 
     // Watch for new websocket data and update chart
+    const lastUpdateRef = useRef(0);
+
     useEffect(() => {
-        if (wsData && wsData.type === 'tick' && seriesRef.current) {
-            seriesRef.current.update({
-                time: wsData.time,
-                open: wsData.open,
-                high: wsData.high,
-                low: wsData.low,
-                close: wsData.close
-            });
-        }
+        if (!wsData || wsData.type !== 'tick' || !seriesRef.current) return;
+
+        // Throttling: Only update once every 50ms to prevent UI lag during high volatility
+        const now = Date.now();
+        if (now - lastUpdateRef.current < 50) return;
+        lastUpdateRef.current = now;
+
+        seriesRef.current.update({
+            time: wsData.time,
+            open: wsData.open,
+            high: wsData.high,
+            low: wsData.low,
+            close: wsData.close
+        });
     }, [wsData]);
 
+    const isConnecting = !wsData && !seriesRef.current;
+
     return (
-        <div
-            ref={chartContainerRef}
-            className="w-full h-full relative"
-        />
+        <div className="w-full h-full relative group">
+            <div
+                ref={chartContainerRef}
+                className="w-full h-full relative"
+            />
+            {isConnecting && (
+                <div className="chart-overlay opacity-100">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="size-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-[10px] font-bold text-slate-muted uppercase tracking-[0.2em] animate-pulse">Syncing Market Feed</p>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

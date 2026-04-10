@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Market Analysis | MOCK_SPY</title>
+    <!-- Include TradingView Lightweight Charts (v3.8 stable) -->
+    <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="top-nav">
+            <div class="logo">
+                <span class="pulse"></span>
+                <h1>Live Data Engine</h1>
+            </div>
+            <div class="connection-status" id="ws-status">
+                Connecting...
+            </div>
+        </header>
+
+        <main class="main-content">
+            <aside class="sidebar-stats">
+                <div class="stat-card">
+                    <span class="stat-label">Asset</span>
+                    <h2 class="stat-value" id="current-symbol">MOCK_SPY</h2>
+                </div>
+
+                <div class="stat-card live-price-card">
+                    <span class="stat-label">Last Price</span>
+                    <h2 class="stat-value price" id="current-price">---</h2>
+                    <span class="price-change" id="price-change">0.00%</span>
+                </div>
+
+                <div class="stat-card indicator-card">
+                    <span class="stat-label">Technical Indicator</span>
+                    <div class="indicator-row">
+                        <span>SMA (20)</span>
+                        <span class="indicator-value" id="current-sma">---</span>
+                    </div>
+                </div>
+
+                <div class="stat-card signal-container">
+                    <span class="stat-label">Live Signal</span>
+                    <div class="signal-badge neutral" id="live-signal">
+                        ANALYZING
+                    </div>
+                    <p class="signal-desc">Based on SMA crossover strategy</p>
+                </div>
+            </aside>
+
+            <section class="chart-section">
+                <div class="chart-header">
+                    <h3>Real-time Candlestick Chart (1m)</h3>
+                    <div class="legend">
+                        <span class="legend-item"><span class="color-box candle"></span> Price Data</span>
+                        <span class="legend-item"><span class="color-box sma"></span> SMA 20</span>
+                    </div>
+                </div>
+                <!-- The Lightweight Chart will mount here -->
+                <div id="tvchart" class="chart-container"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+</body>
+
+</html>

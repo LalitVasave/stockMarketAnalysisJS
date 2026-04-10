@@ -1,19 +1,32 @@
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutGrid, TrendingUp, Activity, Database, LogOut, Plus } from 'lucide-react';
+import { LayoutGrid, TrendingUp, Activity, Database, LogOut, Plus, Shield } from 'lucide-react';
 
 export default function Sidebar() {
     const navigate = useNavigate();
     const [userName, setUserName] = useState('Guest Analyst');
+    const [userEmail, setUserEmail] = useState('not.authenticated@sys');
 
     useEffect(() => {
         const stored = localStorage.getItem('userName');
         if (stored) setUserName(stored);
+        const storedEmail = localStorage.getItem('userEmail');
+        if (storedEmail) setUserEmail(storedEmail);
     }, []);
+
+    const isAdmin = userEmail.toLowerCase().includes('admin') || userEmail === 'guest@quantai.demo'; // Showing for demo too
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('userName');
+        localStorage.removeItem('userEmail');
+        // Clear Intelligence Cache
+        localStorage.removeItem('v_pred_result');
+        localStorage.removeItem('v_hist_data');
+        localStorage.removeItem('v_metrics');
+        localStorage.removeItem('v_asset');
+        localStorage.removeItem('v_model');
+        localStorage.removeItem('v_confidence');
         navigate('/registration');
     };
     const navItems = [
@@ -21,6 +34,10 @@ export default function Sidebar() {
         { name: 'Prediction Engine', path: '/prediction', icon: <TrendingUp className="w-5 h-5" /> },
         { name: 'Data Ingestion', path: '/upload', icon: <Database className="w-5 h-5" /> },
     ];
+
+    if (isAdmin) {
+        navItems.push({ name: 'Network Command', path: '/admin', icon: <Shield className="w-5 h-5" /> });
+    }
 
     return (
         <aside className="w-64 flex-shrink-0 bg-deep-indigo border-r border-border-subtle flex flex-col z-20 h-full">
@@ -59,26 +76,28 @@ export default function Sidebar() {
                 </button>
             </nav>
 
-            <div className="p-4 mx-4 mb-4 rounded-xl bg-white/[0.02] border border-border-subtle">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-muted mb-3">Quick Actions</p>
-                <div className="space-y-2">
-                    <button 
-                        onClick={() => navigate('/upload')}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded bg-primary text-deep-indigo hover:brightness-110 transition-all font-bold text-xs"
-                    >
-                        <Plus className="w-4 h-4" />
-                        New Analysis
-                    </button>
+            <div className="p-4 mx-4 mb-4 rounded-xl bg-white/[0.02] border border-border-subtle overflow-hidden">
+                <div className="flex justify-between items-center mb-3">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-muted">Session Monitor</p>
+                    <div className="flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-primary animate-pulse"></span>
+                        <span className="text-[8px] font-bold text-primary uppercase tracking-tighter">Secure</span>
+                    </div>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[10px] text-white font-mono font-bold truncate">{userEmail}</p>
+                    <p className="text-[8px] text-slate-500 uppercase font-bold tracking-wider">Status: Link Encrypted</p>
                 </div>
             </div>
 
-            <div className="mt-auto p-4 border-t border-border-subtle">
+            <div className="mt-auto p-4 border-t border-border-subtle bg-white/[0.01]">
                 <div className="flex items-center gap-3 px-2">
-                    <img alt="User Profile" className="size-8 rounded-full object-cover ring-2 ring-primary/20"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqIv2b4NtnhmaOs8mbAp32sXZFZRoSY-S2LHfu3crCQJkYOo3lKTWoNl0ME2ahwsBa41pwoRUHBfvBCsvspjWjsa3z0-kUM9sNLrO1NwKxNHokWP6AZ2chIMfb4QtNjMh9QT9_fHu-mRolJFFMtsPOHV2Haxk0J8_ok6XSqn1GZowTkf0W1_XTkN_U2xY1OH6WqqwufEKRe9YRnm4ILGvG5R_bXavdjpw2y7VLgV1MHUAoPuOTa7QM3kx5kCAHcGuOIIbdcybqFSvb" />
+                    <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs ring-2 ring-primary/5">
+                        {userName.charAt(0)}
+                    </div>
                     <div className="flex flex-col">
                         <span className="text-sm font-semibold text-white leading-none truncate max-w-[120px]">{userName}</span>
-                        <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Pro Trader</span>
+                        <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Identity Verified</span>
                     </div>
                 </div>
             </div>
