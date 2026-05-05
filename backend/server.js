@@ -125,6 +125,13 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        // DEMO BYPASS
+        if (email === 'demo@vishleshak.com' && password === 'demo123') {
+            const token = jwt.sign({ userId: 9999 }, process.env.JWT_SECRET || 'supersecretkey123', { expiresIn: '24h' });
+            return res.json({ token, email });
+        }
+
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
             return res.status(401).json({ error: 'Invalid credentials' });
@@ -141,6 +148,14 @@ if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
 app.get('/api/uploads', authenticateToken, async (req, res) => {
     try {
+        if (req.user.userId === 9999) {
+            // Mock history for demo user
+            return res.json([
+                { id: 1, filename: 'Q1_MARKET_DATA.csv', rowsProcessed: 5420, prediction: 104.22, createdAt: new Date().toISOString() },
+                { id: 2, filename: 'SPY_HISTORICAL.csv', rowsProcessed: 12500, prediction: 512.45, createdAt: new Date(Date.now() - 86400000).toISOString() }
+            ]);
+        }
+
         const history = await prisma.upload.findMany({
             where: { userId: req.user.userId },
             orderBy: { createdAt: 'desc' },
@@ -227,6 +242,11 @@ app.post('/api/upload', authenticateToken, upload.single('dataset'), (req, res) 
             });
             worker.on('message', (message) => {
                 if (message.status === 'complete') {
+                    if (req.user.userId === 9999) {
+                        // Bypass DB for demo user
+                        return res.json({ message: 'Success', rowsProcessed: results.length, predictions: message.predictions });
+                    }
+                    
                     prisma.upload.create({
                         data: {
                             filename: req.file.originalname,
