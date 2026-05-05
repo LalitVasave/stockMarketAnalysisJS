@@ -17,6 +17,7 @@ export default function LiveChart({ wsData }) {
     const [timeframe, setTimeframe] = useState('5m');
     const [showBands, setShowBands] = useState(true);
     const lastUpdateRef = useRef(0);
+    const aggregatedRef = useRef([]);
 
     const buildSeedData = () => {
         const now = Math.floor(Date.now() / 1000);
@@ -93,6 +94,7 @@ export default function LiveChart({ wsData }) {
         if (!candleSeriesRef.current || !smaSeriesRef.current || !volumeSeriesRef.current) return;
         const bucket = timeframeToSec[timeframe] || 300;
         const candles = aggregateCandles(rawCandlesRef.current, bucket).slice(-220);
+        aggregatedRef.current = candles;
         candleSeriesRef.current.setData(candles.map(({ time, open, high, low, close }) => ({ time, open, high, low, close })));
         smaSeriesRef.current.setData(buildSMA(candles, SMA_WINDOW));
 
@@ -215,18 +217,51 @@ export default function LiveChart({ wsData }) {
         if (now - lastUpdateRef.current < 50) return;
         lastUpdateRef.current = now;
 
-        rawCandlesRef.current.push({
+        const tick = {
             time: wsData.time,
             open: wsData.open,
             high: wsData.high,
             low: wsData.low,
             close: wsData.close,
             volume: Math.round(380 + Math.random() * 300),
-        });
-        if (rawCandlesRef.current.length > 1200) rawCandlesRef.current.shift();
-        renderAllSeries();
-        chartRef.current?.timeScale().scrollToPosition(0, true);
-    }, [wsData, renderAllSeries]);
+        };
+
+        rawCandlesRef.current.push(tick);
+        if (rawCandlesRef.current.length > 1500) rawCandlesRef.current.shift();
+
+        const bucketSize = timeframeToSec[timeframe] || 60;
+        const bucketTime = Math.floor(tick.time / bucketSize) * bucketSize;
+        const lastAgg = aggregatedRef.current[aggregatedRef.current.length - 1];
+
+        if (lastAgg && lastAgg.time === bucketTime) {
+            lastAgg.high = Math.max(lastAgg.high, tick.high);
+            lastAgg.low = Math.min(lastAgg.low, tick.low);
+            lastAgg.close = tick.close;
+            lastAgg.volume += tick.volume;
+
+            candleSeriesRef.current.update({
+                time: lastAgg.time,
+                open: lastAgg.open,
+                high: lastAgg.high,
+                low: lastAgg.low,
+                close: lastAgg.close,
+            });
+            volumeSeriesRef.current.update({
+                time: lastAgg.time,
+                value: lastAgg.volume,
+                color: lastAgg.close >= lastAgg.open ? 'rgba(13,242,89,0.35)' : 'rgba(255,77,77,0.35)',
+            });
+            
+            smaSeriesRef.current.setData(buildSMA(aggregatedRef.current, SMA_WINDOW));
+            if (showBands) {
+                const { upper, lower } = buildBBands(aggregatedRef.current, SMA_WINDOW);
+                bbUpperSeriesRef.current?.setData(upper);
+                bbLowerSeriesRef.current?.setData(lower);
+            }
+        } else {
+            renderAllSeries();
+        }
+    }, [wsData, timeframe, showBands, renderAllSeries]);
 
     const isConnecting = !wsData && !isReady;
     const timeframes = ['1m', '5m', '15m', '1h'];

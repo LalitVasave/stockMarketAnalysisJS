@@ -26,3 +26,12 @@ model Upload {
   userId        Int
   user          User     @relation(fields: [userId], references: [id])
 }
+
+model MarketSymbol {
+  id          Int      @id @default(autoincrement())
+  symbol      String   @unique
+  companyName String
+  sector      String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}

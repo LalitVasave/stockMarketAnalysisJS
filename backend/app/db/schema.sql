@@ -37,3 +37,24 @@ CREATE TABLE IF NOT EXISTS predictions (
 );
 
 SELECT create_hypertable('predictions', 'time', if_not_exists => TRUE, chunk_time_interval => INTERVAL '1 month');
+
+CREATE TABLE IF NOT EXISTS market_symbols (
+    id              SERIAL PRIMARY KEY,
+    symbol          TEXT UNIQUE NOT NULL,
+    company_name    TEXT NOT NULL,
+    sector          TEXT,
+    is_active       BOOLEAN DEFAULT TRUE,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insert initial symbols
+INSERT INTO market_symbols (symbol, company_name, sector) VALUES
+('RELIANCE', 'Reliance Industries', 'Energy'),
+('HDFCBANK', 'HDFC Bank', 'Banking'),
+('ICICIBANK', 'ICICI Bank', 'Banking'),
+('INFY', 'Infosys', 'IT'),
+('TCS', 'TCS', 'IT'),
+('SBIN', 'State Bank of India', 'PSU Bank'),
+('LT', 'Larsen & Toubro', 'Infrastructure'),
+('TATAMOTORS', 'Tata Motors', 'Auto')
+ON CONFLICT (symbol) DO NOTHING;

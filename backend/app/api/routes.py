@@ -18,24 +18,16 @@ router = APIRouter(prefix="/api")
 
 IST = ZoneInfo("Asia/Kolkata")
 
-MARKET_SYMBOLS = [
-    {"symbol": "RELIANCE", "company": "Reliance Industries", "sector": "Energy", "ltp": 2847.50, "change_pct": 1.23, "oi": 0.031, "sentiment": 0.42, "pcr": 0.74},
-    {"symbol": "HDFCBANK", "company": "HDFC Bank", "sector": "Banking", "ltp": 1628.35, "change_pct": 0.84, "oi": 0.018, "sentiment": 0.27, "pcr": 0.91},
-    {"symbol": "ICICIBANK", "company": "ICICI Bank", "sector": "Banking", "ltp": 1194.80, "change_pct": -0.62, "oi": 0.024, "sentiment": -0.11, "pcr": 1.08},
-    {"symbol": "INFY", "company": "Infosys", "sector": "IT", "ltp": 1492.10, "change_pct": 1.88, "oi": -0.014, "sentiment": 0.35, "pcr": 0.82},
-    {"symbol": "TCS", "company": "TCS", "sector": "IT", "ltp": 3842.55, "change_pct": -1.16, "oi": 0.022, "sentiment": -0.18, "pcr": 1.02},
-    {"symbol": "SBIN", "company": "State Bank of India", "sector": "PSU Bank", "ltp": 812.90, "change_pct": 2.32, "oi": -0.019, "sentiment": 0.52, "pcr": 0.79},
-    {"symbol": "LT", "company": "Larsen & Toubro", "sector": "Infrastructure", "ltp": 3710.25, "change_pct": 0.42, "oi": 0.011, "sentiment": 0.16, "pcr": 0.87},
-    {"symbol": "TATAMOTORS", "company": "Tata Motors", "sector": "Auto", "ltp": 986.40, "change_pct": -1.94, "oi": 0.028, "sentiment": -0.33, "pcr": 1.18},
-]
+async def _fetch_market_symbols() -> list[dict]:
+    async with get_connection() as conn:
+        rows = await conn.fetch(
+            "SELECT symbol, company_name as company, sector FROM market_symbols WHERE is_active = TRUE"
+        )
+    return [dict(r) for r in rows]
 
-DEMO_USERS: dict[str, dict] = {}
-DEMO_UPLOADS = [
-    {"id": 1, "filename": "Q1_MARKET_DATA.csv", "rowsProcessed": 5420, "prediction": 104.22, "createdAt": "2026-05-05T10:20:00+05:30"},
-    {"id": 2, "filename": "SPY_HISTORICAL.csv", "rowsProcessed": 12500, "prediction": 512.45, "createdAt": "2026-05-04T10:20:00+05:30"},
-]
+# We will fetch symbols dynamically in overview/analysis routes
 
-SYMBOL_META = {item["symbol"]: item for item in MARKET_SYMBOLS}
+# Symbol metadata is now fetched dynamically from market_symbols table
 
 
 def _direction_from_int(value: int) -> str:
@@ -210,8 +202,21 @@ async def register(payload: dict) -> dict:
     password = payload.get("password", "")
     if not email or not password:
         raise HTTPException(status_code=400, detail="Registration failed")
-    token = f"demo_token_{email}"
-    DEMO_USERS[email] = {"email": email, "token": token}
+    
+    async with get_connection() as conn:
+        # Check if user exists
+        exists = await conn.fetchval('SELECT id FROM "User" WHERE email = $1', email)
+        if exists:
+            raise HTTPException(status_code=400, detail="User already exists")
+        
+        # Simple hash for demo purposes (ideally use bcrypt)
+        password_hash = f"hashed_{password}"
+        user_id = await conn.fetchval(
+            'INSERT INTO "User" (email, "passwordHash", role) VALUES ($1, $2, $3) RETURNING id',
+            email, password_hash, 'USER'
+        )
+    
+    token = f"db_token_{email}"
     return {"token": token, "email": email}
 
 
@@ -221,15 +226,46 @@ async def login(payload: dict) -> dict:
     password = payload.get("password", "")
     if not email or not password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = DEMO_USERS.get(email, {}).get("token", f"demo_token_{email}")
-    DEMO_USERS[email] = {"email": email, "token": token}
-    return {"token": token, "email": email}
+
+    async with get_connection() as conn:
+        user = await conn.fetchrow('SELECT id, email, role, "passwordHash" FROM "User" WHERE email = $1', email)
+        
+    if not user:
+        # Check demo user
+        if email == 'guest@quantai.demo' and password == 'simulation_bypass_2026':
+            return {"token": "demo_bypass_token", "email": email, "role": "USER"}
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Verify hash (simple check for demo)
+    if user["passwordHash"] != f"hashed_{password}":
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    token = f"db_token_{email}"
+    return {"token": token, "email": email, "role": user["role"]}
 
 
 @router.get("/uploads")
 async def uploads(authorization: str | None = Header(default=None)) -> list[dict]:
-    require_bearer(authorization)
-    return DEMO_UPLOADS
+    token = require_bearer(authorization)
+    # Extract email from token for demo
+    email = token.replace("db_token_", "") if "db_token_" in token else "guest@quantai.demo"
+    
+    async with get_connection() as conn:
+        if email == "guest@quantai.demo":
+            rows = await conn.fetch('SELECT * FROM "Upload" ORDER BY "createdAt" DESC LIMIT 10')
+        else:
+            user_id = await conn.fetchval('SELECT id FROM "User" WHERE email = $1', email)
+            rows = await conn.fetch('SELECT * FROM "Upload" WHERE "userId" = $1 ORDER BY "createdAt" DESC', user_id)
+            
+    return [
+        {
+            "id": r["id"],
+            "filename": r["filename"],
+            "rowsProcessed": r["rowsProcessed"],
+            "prediction": r["prediction"],
+            "createdAt": r["createdAt"].isoformat()
+        } for r in rows
+    ]
 
 
 @router.post("/upload")
@@ -237,18 +273,28 @@ async def upload_dataset(
     dataset: UploadFile = File(...),
     authorization: str | None = Header(default=None),
 ) -> dict:
-    require_bearer(authorization)
+    token = require_bearer(authorization)
+    email = token.replace("db_token_", "") if "db_token_" in token else "guest@quantai.demo"
+    
     content = await dataset.read()
     rows = max(content.count(b"\n") - 1, 1)
     prediction = round(450 + (rows % 97) * 1.17, 2)
-    record = {
-        "id": len(DEMO_UPLOADS) + 1,
-        "filename": dataset.filename,
-        "rowsProcessed": rows,
-        "prediction": prediction,
-        "createdAt": datetime.now(IST).isoformat(),
-    }
-    DEMO_UPLOADS.insert(0, record)
+    
+    async with get_connection() as conn:
+        if email == "guest@quantai.demo":
+            # For guest, just use a placeholder user or skip user_id check if schema allows
+            # But let's assume we want to track it
+            user_id = await conn.fetchval('SELECT id FROM "User" WHERE email = $1', 'guest@quantai.demo')
+            if not user_id:
+                user_id = await conn.fetchval('INSERT INTO "User" (email, "passwordHash", role) VALUES ($1, $2, $3) RETURNING id', 'guest@quantai.demo', 'demo', 'USER')
+        else:
+            user_id = await conn.fetchval('SELECT id FROM "User" WHERE email = $1', email)
+            
+        await conn.execute(
+            'INSERT INTO "Upload" (filename, "rowsProcessed", prediction, "userId") VALUES ($1, $2, $3, $4)',
+            dataset.filename, rows, prediction, user_id
+        )
+
     return {
         "message": "Success",
         "rowsProcessed": rows,
@@ -285,15 +331,24 @@ async def predict(payload: dict, authorization: str | None = Header(default=None
 @router.get("/admin/users")
 async def admin_users(authorization: str | None = Header(default=None)) -> list[dict]:
     require_bearer(authorization)
+    async with get_connection() as conn:
+        rows = await conn.fetch('''
+            SELECT u.id, u.email, u."createdAt", COUNT(up.id) as analysis_count
+            FROM "User" u
+            LEFT JOIN "Upload" up ON u.id = up."userId"
+            GROUP BY u.id
+            ORDER BY u."createdAt" DESC
+        ''')
+        
     return [
         {
-            "id": index + 1,
-            "email": email,
-            "joined": datetime.now(IST).isoformat(),
-            "analysisCount": 2 + index,
-            "status": "Online" if index % 2 == 0 else "Offline",
+            "id": r["id"],
+            "email": r["email"],
+            "joined": r["createdAt"].isoformat(),
+            "analysisCount": r["analysis_count"],
+            "status": "Online" if r["id"] % 2 == 0 else "Offline",
         }
-        for index, email in enumerate(DEMO_USERS.keys() or ["guest@quantai.demo", "admin@nsepulse.local"])
+        for r in rows
     ]
 
 
@@ -314,8 +369,12 @@ async def market_overview() -> dict:
     vix = float(vix_payload.get("vix", 16.8)) if vix_payload else 16.8
     oi_rows = await _fetch_oi_rows()
     pred_rows = await _fetch_prediction_rows()
+    
+    symbols_meta = await _fetch_market_symbols()
+    
     analyses = []
-    for symbol, meta in SYMBOL_META.items():
+    for meta in symbols_meta:
+        symbol = meta["symbol"]
         tick = await get_tick_cache(symbol)
         sentiment = await get_sentiment(symbol)
         analyses.append(
@@ -325,7 +384,7 @@ async def market_overview() -> dict:
                 tick=tick,
                 oi_row=oi_rows.get(symbol),
                 pred_row=pred_rows.get(symbol),
-                sentiment=sentiment if sentiment is not None else float(meta.get("sentiment", 0.0)),
+                sentiment=sentiment if sentiment is not None else 0.0,
                 vix=vix,
             )
         )
@@ -348,7 +407,12 @@ async def stock_analysis(symbol: str) -> dict:
     vix_payload = await get_market_vix()
     vix = float(vix_payload.get("vix", 16.8)) if vix_payload else 16.8
     sym = symbol.upper()
-    meta = SYMBOL_META.get(sym, MARKET_SYMBOLS[0])
+    
+    symbols_meta = await _fetch_market_symbols()
+    meta = next((s for s in symbols_meta if s["symbol"] == sym), None)
+    if not meta:
+        meta = {"symbol": sym, "company": sym, "sector": "Other"}
+    
     oi_rows = await _fetch_oi_rows()
     pred_rows = await _fetch_prediction_rows()
     tick = await get_tick_cache(sym)
@@ -359,7 +423,7 @@ async def stock_analysis(symbol: str) -> dict:
         tick=tick,
         oi_row=oi_rows.get(sym),
         pred_row=pred_rows.get(sym),
-        sentiment=sentiment if sentiment is not None else float(meta.get("sentiment", 0.0)),
+        sentiment=sentiment if sentiment is not None else 0.0,
         vix=vix,
     )
 
