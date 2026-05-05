@@ -1,108 +1,114 @@
 # 📈 Vishleshak: Institutional Financial Intelligence Terminal
 
-**Vishleshak** is a high-performance financial intelligence platform designed for institutional-grade market analysis and predictive modeling. Built on a decoupled, parallel-thread architecture, it provides analysts with real-time intraday tracking and advanced AI-driven forecasting for stock and crypto assets.
+**Vishleshak** is a high-performance, real-time financial intelligence platform designed for institutional-grade market analysis and predictive modeling. Built on a decoupled, event-driven architecture, it provides analysts with sub-second market tracking and advanced AI-driven forecasting.
 
 🚀 **Tech Stack**
-| Layer | Technology |
-| :--- | :--- |
-| **Frontend** | React 19 + Vite |
-| **Styling** | Tailwind CSS 4.0 |
-| **Charts** | Lightweight Charts (TradingView) |
-| **Backend** | Node.js + Express |
-| **Database** | PostgreSQL (via Supabase) |
-| **ORM** | Prisma |
-| **Real-time** | WebSocket (ws) |
-| **AI Engine** | JavaScript Worker Threads + Custom Regression |
+| Layer | Technology | Description |
+| :--- | :--- | :--- |
+| **Frontend** | React 19 + Vite | High-performance UI with concurrent rendering |
+| **Styling** | Tailwind CSS 4.0 | Modern design system with Glassmorphism |
+| **Charts** | Lightweight Charts | TradingView's professional charting library |
+| **Backend** | Node.js + Express | Scalable API & Event-driven server |
+| **Database** | PostgreSQL + Prisma | Relational persistence with type-safe ORM |
+| **Real-time** | WebSockets (WS) | Full-duplex communication for live ticks |
+| **AI Engine** | Worker Threads | Parallel processing for heavy ML computation |
+| **DevOps** | Docker + Compose | Containerized microservices architecture |
 
-📁 **Project Structure**
+---
+
+## ✨ Core Features
+
+### 📡 Real-time Market Intelligence
+- **Event-Driven UI**: Replaced legacy polling with high-frequency WebSocket updates.
+- **NSE Pulse Terminal**: A high-fidelity live tracking board for institutional symbols (Reliance, HDFC, etc.).
+- **Live Feed Active State**: Visual confirmation of simulation core synchronization.
+
+### 🧠 Predictive Modeling
+- **Decoupled AI Engine**: Forecasting logic (OLS Regression) runs on separate threads to prevent UI blocking.
+- **Pipeline Notifications**: Immediate `PIPELINE_UPDATED` signals when server-side processing completes.
+- **Custom Regression**: Statistical modeling for intraday price action.
+
+### 🛡️ Institutional Security (RBAC)
+- **Role-Based Access**: Strict separation between `USER` and `ADMIN` privileges.
+- **Hardened JWT**: Mandatory environment-based secret verification (No hardcoded fallbacks).
+- **Secure Demo Portal**: Ephemeral JWT-backed access for Guest Analysts.
+
+---
+
+## 📁 Project Structure
 ```text
 vishleshak/
 ├── backend/
 │   ├── prisma/             # Database schema & migrations
-│   ├── middleware/         # JWT verification (auth.js)
-│   ├── uploads/            # Temporary CSV storage
-│   ├── aiWorker.js         # Parallel AI processing unit
-│   ├── server.js           # Core API & WebSocket server
-│   └── .env                # Server configurations
+│   ├── middleware/         # Security (Auth & RBAC)
+│   ├── server.js           # API, WebSocket & Simulation Core
+│   └── aiWorker.js         # Parallel ML worker
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     # UI Components (LiveChart, Sidebar, etc.)
-│   │   ├── pages/          # Admin, Dashboard, Prediction, DataIngestion
-│   │   ├── App.jsx         # Main application logic
-│   │   └── index.css       # Global design system
+│   │   ├── components/     # UI Components (LiveChart, Sidebar)
+│   │   ├── hooks/          # useWebSocket, useMarketSocket
+│   │   └── pages/          # Dashboard, Pulse, Prediction, Admin
 │   └── vite.config.js
-├── legacy/                 # Older versions and standalone modules
-└── README.md
+├── gateway/                # (Optional) Microservice Gateway
+└── docker-compose.yml      # Infrastructure as Code
 ```
 
-🛠️ **Setup Guide (Step-by-Step)**
+---
+
+## 🛠️ Installation & Setup
 
 ### Prerequisites
-- **Node.js** v18.0.0+
-- **NPM** v9.0.0+
-- **PostgreSQL** (Local or Cloud-based like Supabase)
+- **Node.js** v20.0.0+
+- **Docker Desktop** (Optional, for containerized run)
+- **PostgreSQL** (via Supabase or Local)
 
-### 1. Clone & Prepare
-```bash
-git clone https://github.com/LalitVasave/stockMarketAnalysisJS.git
-cd vishleshak
-```
-
-### 2. Configure Backend
+### 1. Environment Configuration
 Create a `backend/.env` file:
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/vishleshak"
-DIRECT_URL="postgresql://user:password@localhost:5432/vishleshak"
-JWT_SECRET="your-institutional-secret-key"
+DATABASE_URL="postgresql://user:password@host:port/db"
+JWT_SECRET="your_secure_institutional_secret"
 PORT=3005
 ```
 
-### 3. Initialize Backend
+### 2. Standard Deployment
 ```bash
+# Backend Setup
 cd backend
 npm install
-npx prisma migrate dev --name init
+npx prisma db push
 npm start
-```
-The server will be running at `http://localhost:3005`.
 
-### 4. Initialize Frontend (New Terminal)
-```bash
+# Frontend Setup (New Terminal)
 cd frontend
 npm install
 npm run dev
 ```
-The terminal will be accessible at `http://localhost:5173`.
+- **Backend API**: `http://localhost:3005`
+- **Frontend App**: `http://localhost:5173` (or 5174)
 
-🧪 **Test Accounts**
-The system uses a simulation mode. Real user accounts are stored in the database.
-Check `backend/test-register.cjs` for sample credentials if available.
+### 3. Docker Deployment
+```bash
+docker-compose up --build
+```
 
-📡 **API Endpoints**
-| Method | Endpoint | Auth | Description |
+---
+
+## 📡 API Reference
+
+| Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/register` | — | Register new analyst |
-| `POST` | `/api/login` | — | Login & generate session token |
-| `GET` | `/api/uploads` | JWT | Full upload/prediction history |
-| `POST` | `/api/predict` | JWT | Trigger AI forecasting engine |
-| `POST` | `/api/upload` | JWT | Bulk CSV data ingestion |
-| `GET` | `/api/admin/users`| JWT | Institutional administration panel |
+| `POST` | `/api/login` | Public | Authenticate & obtain Institutional JWT |
+| `GET` | `/api/uploads` | User | Fetch ingestion & prediction history |
+| `POST` | `/api/upload` | User | Ingest CSV data and trigger AI pipeline |
+| `GET` | `/api/admin/users`| Admin | System-wide audit and user management |
 
-🎨 **Features**
+---
 
-### 💻 Live Terminal Dashboard
-- **WebSocket Feed**: Real-time market data streaming with sub-second latency.
-- **Dynamic SMA**: Integrated Simple Moving Average overlays calculated on-the-fly.
-- **Global Context**: High-fidelity charts with responsive scaling.
-
-### 🧠 Advanced Prediction Engine
-- **Decoupled Execution**: AI computations are offloaded to separate worker threads.
-- **Multi-Model Logic**: Swappable logic between Temporal LSTM and OLS Regression.
-- **Institutional Fallback**: Browser-side math modeling if server connection is lost.
-
-### 🛡️ Hardened Security & Admin
-- **JWT Protection**: Secure API communication for all institutional data.
-- **Admin Diagnostic**: Monitor user activity and system performance from a central panel.
+## 🎨 System Aesthetics
+Vishleshak uses a **Refined Cyber-Indigo** design system featuring:
+- **Vibrant Chart Overlays**: High-contrast TradingView candles.
+- **Session Monitor**: Real-time visual feedback on link encryption and identity.
+- **Terminal Eyebrows**: Metadata-rich headers for institutional context.
 
 📝 **License**
-Documented for Technical Review & Presentation by the **Vishleshak Core Team**.
+Maintained for Technical Review & Presentation by the **Vishleshak Core Team**.
