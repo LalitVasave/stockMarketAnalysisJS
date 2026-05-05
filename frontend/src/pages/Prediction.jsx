@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createChart, LineSeries } from 'lightweight-charts';
-import { Loader2 } from 'lucide-react';
+import { Activity, BrainCircuit, Loader2, Radar, Terminal } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 // --- MOCK ML ENGINE (OLS Regression Fallback) ---
 function runFrontendAnalysis(assetName, modelName, days = 30) {
@@ -221,7 +222,7 @@ export default function Prediction() {
         
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('/api/predict', {
+            const res = await fetch(`${API_BASE_URL}/api/predict`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -274,8 +275,8 @@ export default function Prediction() {
     };
 
     return (
-        <main className="flex-1 flex overflow-hidden w-full h-full bg-[#0b0f19]">
-            <aside className="w-80 border-r border-white/5 bg-[#0f172a]/50 flex flex-col shrink-0 overflow-y-auto custom-scrollbar">
+        <main className="flex h-full w-full flex-1 flex-col overflow-y-auto bg-[#0b0f19] pt-16 md:pt-0 lg:flex-row lg:overflow-hidden">
+            <aside className="w-full border-b border-white/5 bg-[#0f172a]/50 lg:w-80 lg:shrink-0 lg:border-b-0 lg:border-r lg:overflow-y-auto">
                 <div className="p-6 space-y-8 flex-1">
                     <header className="space-y-1">
                         <h3 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-4">Analysis Terminal</h3>
@@ -349,20 +350,20 @@ export default function Prediction() {
                     )}
                 </div>
 
-                <div className="p-6 border-t border-white/5 bg-[#0f172a]/20">
+                <div className="border-t border-white/5 bg-[#0f172a]/20 p-6">
                     <button 
                         onClick={handleRunAnalysis}
                         disabled={loading}
                         className="w-full bg-primary text-deep-indigo py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-3 hover:shadow-[0_0_20px_rgba(13,242,89,0.3)] active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed group"
                     >
-                        {loading ? <Loader2 className="animate-spin w-5 h-5" /> : <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">analytics</span>}
+                        {loading ? <Loader2 className="animate-spin w-5 h-5" /> : <BrainCircuit className="h-5 w-5 transition-transform group-hover:scale-110" />}
                         <span className="text-xs uppercase tracking-[0.2em]">{loading ? 'Synthesizing...' : 'Initialize Analysis'}</span>
                     </button>
                 </div>
             </aside>
 
-            <section className="flex-1 flex flex-col relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(13,242,89,0.03),transparent)]">
-                <header className="flex items-center justify-between px-8 py-5 border-b border-white/5">
+            <section className="relative flex min-h-[60vh] flex-1 flex-col bg-[radial-gradient(circle_at_top_right,rgba(13,242,89,0.03),transparent)] lg:min-h-0">
+                <header className="flex items-center justify-between border-b border-white/5 px-5 py-5 md:px-8">
                     <div className="flex items-center gap-4">
                         <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
                         <h2 className="text-[10px] font-bold text-white tracking-[0.3em] uppercase">
@@ -376,12 +377,12 @@ export default function Prediction() {
                     )}
                 </header>
 
-                <div className="flex-1 p-8">
-                    <div className="w-full h-full relative rounded-2xl border border-white/5 bg-[#0f172a]/20 backdrop-blur-sm overflow-hidden shadow-2xl">
+                <div className="flex-1 p-4 md:p-8">
+                    <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-white/5 bg-[#0f172a]/20 shadow-2xl backdrop-blur-sm md:h-[520px] lg:h-full">
                         {errorMsg ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
                                 <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
-                                    <span className="material-symbols-outlined text-3xl text-red-500">terminal</span>
+                                    <Terminal className="h-8 w-8 text-red-500" />
                                 </div>
                                 <h3 className="text-white font-bold mb-2 uppercase tracking-widest text-xs">Runtime Exception</h3>
                                 <p className="text-sm text-slate-500 max-w-sm font-medium leading-relaxed mb-6">{errorMsg}</p>
@@ -402,7 +403,7 @@ export default function Prediction() {
                             </div>
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-center opacity-20 group">
-                                <span className="material-symbols-outlined text-8xl mb-8 text-slate-500 group-hover:scale-110 transition-transform duration-700">insights</span>
+                                <Radar className="mb-8 h-20 w-20 text-slate-500 transition-transform duration-700 group-hover:scale-110" />
                                 <div className="space-y-2">
                                     <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-slate-400">Terminal Idle</p>
                                     <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Connect to Core for Projection</p>

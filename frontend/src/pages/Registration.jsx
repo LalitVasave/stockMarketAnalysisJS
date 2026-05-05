@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BarChart3, Check, Eye, EyeOff } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function Registration() {
     const navigate = useNavigate();
@@ -16,7 +18,7 @@ export default function Registration() {
         setErrorMsg('');
         setIsLoading(true);
 
-        const endpoint = isLogin ? '/api/login' : '/api/register';
+        const endpoint = `${API_BASE_URL}${isLogin ? '/api/login' : '/api/register'}`;
         
         try {
             const res = await fetch(endpoint, {
@@ -33,6 +35,7 @@ export default function Registration() {
 
             // Save JWT and identity properly
             localStorage.setItem('token', data.token);
+            localStorage.setItem('userRole', data.role);
             localStorage.setItem('userName', fullName || email.split('@')[0]);
             localStorage.setItem('userEmail', email);
             navigate('/dashboard');
@@ -43,20 +46,40 @@ export default function Registration() {
         }
     };
 
-    const handleDemoAccess = () => {
-        localStorage.setItem('token', 'demo_institutional_token');
-        localStorage.setItem('userName', fullName || 'Guest Analyst');
-        localStorage.setItem('userEmail', 'guest@quantai.demo');
-        navigate('/dashboard');
+    const handleDemoAccess = async () => {
+        setIsLoading(true);
+        setErrorMsg('');
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: 'guest@quantai.demo', 
+                    password: 'simulation_bypass_2026' 
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Demo access denied');
+
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('userRole', data.role);
+            localStorage.setItem('userName', 'Guest Analyst');
+            localStorage.setItem('userEmail', 'guest@quantai.demo');
+            navigate('/dashboard');
+        } catch (err) {
+            setErrorMsg('System connection failed: ' + err.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <div className="page-wrapper flex-col justify-between items-center w-full h-full overflow-y-auto">
             <nav className="w-full p-10 flex justify-center shrink-0">
-                <div className="flex items-center gap-4">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-deep-indigo shadow-[0_0_20px_rgba(13,242,89,0.3)]">
-                        <span className="material-symbols-outlined font-bold text-2xl">query_stats</span>
-                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-deep-indigo shadow-[0_0_20px_rgba(13,242,89,0.3)]">
+                        <BarChart3 className="h-6 w-6" />
+                        </div>
                     <h1 className="text-2xl font-bold tracking-[0.3em] text-white uppercase">Vishleshak</h1>
                 </div>
             </nav>
@@ -113,7 +136,13 @@ export default function Registration() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                     />
-                                    <span onClick={() => setShowPassword(!showPassword)} className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 text-xl cursor-pointer hover:text-primary transition-colors">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-5 top-1/2 -translate-y-1/2 cursor-pointer text-slate-500 transition-colors hover:text-primary"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
                                 </div>
                                 <div className="pt-3">
                                     <div className="flex gap-2 mb-3">
@@ -134,7 +163,7 @@ export default function Registration() {
                                     <input className="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer z-10" id="terms" type="checkbox" />
                                     <label className="flex items-center cursor-pointer" htmlFor="terms">
                                         <span className="check-box w-6 h-6 border border-white/10 rounded-md flex items-center justify-center transition-all duration-200 bg-white/5">
-                                            <span className="material-symbols-outlined check-icon text-deep-indigo text-lg font-bold scale-0 opacity-0 transition-all duration-200">check</span>
+                                            <Check className="check-icon h-4 w-4 scale-0 opacity-0 text-deep-indigo transition-all duration-200" />
                                         </span>
                                     </label>
                                 </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, Activity, Globe, Loader2, Search } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function Admin() {
     const [users, setUsers] = useState([]);
@@ -10,7 +11,7 @@ export default function Admin() {
         const fetchUsers = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('/api/admin/users', {
+                const res = await fetch(`${API_BASE_URL}/api/admin/users`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Unauthorized access to administrative core.');
@@ -31,7 +32,7 @@ export default function Admin() {
 
     return (
         <main className="flex-1 flex flex-col overflow-hidden bg-[#0b0f19]">
-            <header className="h-20 flex-shrink-0 flex items-center justify-between px-10 border-b border-white/5 sticky top-0 bg-[#0b0f19]/80 backdrop-blur-xl z-20 w-full">
+            <header className="h-20 flex-shrink-0 flex items-center justify-between pl-20 pr-4 md:px-10 border-b border-white/5 sticky top-0 bg-[#0b0f19]/80 backdrop-blur-xl z-20 w-full">
                 <div className="flex items-center gap-4">
                     <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_20px_rgba(13,242,89,0.1)]">
                         <Shield className="w-5 h-5 animate-pulse" />
@@ -42,7 +43,7 @@ export default function Admin() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="hidden items-center gap-6 md:flex">
                     <div className="flex flex-col items-end">
                         <span className="text-[10px] font-bold text-primary uppercase tracking-widest">System Status</span>
                         <span className="text-[10px] text-slate-400 font-mono">ENCRYPTED L3 CHANNEL</span>
@@ -61,7 +62,7 @@ export default function Admin() {
                 </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto p-10 space-y-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 pt-6 md:p-10 space-y-8 custom-scrollbar">
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[

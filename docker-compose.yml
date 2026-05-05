@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_DB: nse_pulse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+      - ./backend/app/db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      APP_ENV: development
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://postgres:postgres@timescaledb:5432/nse_pulse
+      ALLOW_MOCK_DATA: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - timescaledb
+
+  gateway:
+    build:
+      context: ./gateway
+    environment:
+      PORT: 8080
+      REDIS_URL: redis://redis:6379/0
+      API_BASE_URL: http://backend:8000
+      USE_MOCK_BROADCAST: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+      VITE_WS_URL: ws://localhost:8080
+    ports:
+      - "5173:5173"
+    depends_on:
+      - gateway
+
+volumes:
+  timescale-data:
+  redis-data:

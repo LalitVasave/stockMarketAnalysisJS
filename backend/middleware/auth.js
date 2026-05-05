@@ -6,7 +6,13 @@ function authenticateToken(req, res, next) {
     
     if (!token) return res.sendStatus(401);
 
-    jwt.verify(token, process.env.JWT_SECRET || 'supersecretkey123', (err, user) => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        console.error('CRITICAL: JWT_SECRET is not defined in environment variables.');
+        return res.status(500).json({ error: 'Internal Server Error: Secure Configuration Missing' });
+    }
+
+    jwt.verify(token, secret, (err, user) => {
         if (err) return res.sendStatus(403);
         req.user = user;
         next();

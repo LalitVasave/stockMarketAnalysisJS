@@ -1,43 +1,22 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 
-// Pages
-import Registration from './pages/Registration';
-import Dashboard from './pages/Dashboard';
-import Upload from './pages/Upload';
-import Prediction from './pages/Prediction';
-import Admin from './pages/Admin';
-
-// Components
 import Sidebar from './components/Sidebar';
+import Admin from './pages/Admin';
+import Dashboard from './pages/Dashboard';
+import Pulse from './pages/Pulse';
+import Prediction from './pages/Prediction';
+import Registration from './pages/Registration';
+import Upload from './pages/Upload';
 
 function AppLayout() {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-bg-dark text-slate-200 font-sans antialiased">
+    <div className="flex min-h-screen w-full overflow-hidden bg-[var(--bg)] text-[var(--text-primary)]">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div className="flex-1 overflow-hidden md:pl-0">
         <Outlet />
       </div>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/registration" replace />} />
-        <Route path="/registration" element={<Registration />} />
-
-        {/* Persistent Layout Section: All sub-routes share the same Sidebar instance */}
-        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/prediction" element={<Prediction />} />
-          <Route path="/admin" element={<Admin />} />
-        </Route>
-      </Routes>
-    </Router>
   );
 }
 
@@ -47,4 +26,27 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-export default App;
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/registration" replace />} />
+        <Route path="/registration" element={<Registration />} />
+
+        <Route
+          element={(
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          )}
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/pulse" element={<Pulse />} />
+          <Route path="/upload" element={<Upload />} />
+          <Route path="/prediction" element={<Prediction />} />
+          <Route path="/admin" element={<Admin />} />
+        </Route>
+      </Routes>
+    </Router>
+  );
+}

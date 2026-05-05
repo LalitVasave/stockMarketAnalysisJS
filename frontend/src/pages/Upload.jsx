@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Upload as UploadIcon, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Upload as UploadIcon, CheckCircle, XCircle, Loader2, FileText } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function Upload() {
     const fileInputRef = useRef(null);
@@ -11,7 +12,7 @@ export default function Upload() {
     const fetchHistory = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('/api/uploads', {
+            const res = await fetch(`${API_BASE_URL}/api/uploads`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -61,7 +62,7 @@ export default function Upload() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/upload', {
+            const response = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -92,7 +93,7 @@ export default function Upload() {
 
     return (
         <main className="flex-1 flex flex-col bg-bg-dark w-full h-full overflow-y-auto custom-scrollbar">
-            <div className="p-8 max-w-5xl mx-auto w-full space-y-8">
+            <div className="p-4 pt-20 md:pt-8 md:p-8 max-w-5xl mx-auto w-full space-y-8">
                 <header>
                     <h2 className="text-3xl font-black text-white tracking-tight">Pro Data Ingestion &amp; Mapping</h2>
                     <p className="text-slate-400 mt-1">Scale your analysis with high-fidelity data pipelines</p>
@@ -206,11 +207,11 @@ export default function Upload() {
                                         <tr key={upload.id} className="hover:bg-white/[0.02] text-sm text-slate-400 transition-colors">
                                             <td className="px-6 py-4 font-semibold text-white/90">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="material-symbols-outlined text-sm text-slate-500">description</span>
+                                                    <FileText className="h-4 w-4 text-slate-500" />
                                                     {upload.filename}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">{upload.timestamp}</td>
+                                            <td className="px-6 py-4">{upload.createdAt || upload.timestamp}</td>
                                             <td className="px-6 py-4 font-mono text-xs">{upload.rowsProcessed.toLocaleString()}</td>
                                             <td className="px-6 py-4 text-right">
                                                 <span className="px-3 py-1 rounded bg-primary/10 text-primary text-xs font-bold border border-primary/20">Processed</span>

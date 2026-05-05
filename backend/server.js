@@ -54,8 +54,8 @@ function generateTick() {
     if (currentPrice < 10) currentPrice = 10;
     
     const close = currentPrice;
-    const high = Math.max(open, close) + (Math.random() * 0.5);
-    const low = Math.min(open, close) - (Math.random() * 0.5);
+    const high = Math.max(open, close) + (Math.random() * 0.2);
+    const low = Math.min(open, close) - (Math.random() * 0.2);
 
     priceHistory.push(close);
     if (priceHistory.length > historyLength) priceHistory.shift();
@@ -88,6 +88,23 @@ setInterval(broadcastTick, 1500);
 
 wss.on('connection', (ws) => {
     console.log('New client connected to live feed');
+    
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+            if (data.type === 'auth' && data.token) {
+                jwt.verify(data.token, process.env.JWT_SECRET, (err, decoded) => {
+                    if (!err && decoded) {
+                        ws.userId = decoded.userId;
+                        console.log(`WebSocket client identified as User: ${ws.userId}`);
+                    }
+                });
+            }
+        } catch (e) {
+            // Silent catch for malformed frames
+        }
+    });
+
     ws.send(JSON.stringify({
         type: 'info',
         message: 'Connected to Vishleshak Live Engine',
@@ -96,6 +113,15 @@ wss.on('connection', (ws) => {
         currentSMA: calculateSMA(priceHistory)
     }));
 });
+
+function notifyUser(userId, payload) {
+    const dataString = JSON.stringify(payload);
+    wss.clients.forEach(client => {
+        if (client.userId === userId && client.readyState === WebSocket.OPEN) {
+            client.send(dataString);
+        }
+    });
+}
 
 // Middleware
 app.use(cors());
@@ -114,8 +140,12 @@ app.post('/api/register', async (req, res) => {
         const user = await prisma.user.create({
             data: { email, passwordHash }
         });
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'supersecretkey123', { expiresIn: '24h' });
-        res.json({ token, email: user.email });
+        const token = jwt.sign(
+            { userId: user.id, role: user.role }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+        res.json({ token, email: user.email, role: user.role });
     } catch (error) {
         console.error('Reg error:', error);
         res.status(400).json({ error: 'Registration failed. Email might already exist.' });
@@ -126,18 +156,27 @@ app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // DEMO BYPASS
-        if (email === 'demo@vishleshak.com' && password === 'demo123') {
-            const token = jwt.sign({ userId: 9999 }, process.env.JWT_SECRET || 'supersecretkey123', { expiresIn: '24h' });
-            return res.json({ token, email });
+        // Secure Demo Access logic
+        if (email === 'guest@quantai.demo' && password === 'simulation_bypass_2026') {
+             const token = jwt.sign(
+                { userId: 9999, role: 'USER' }, 
+                process.env.JWT_SECRET, 
+                { expiresIn: '24h' }
+            );
+            return res.json({ token, email: 'guest@quantai.demo', role: 'USER' });
         }
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'supersecretkey123', { expiresIn: '24h' });
-        res.json({ token, email: user.email });
+        
+        const token = jwt.sign(
+            { userId: user.id, role: user.role }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+        res.json({ token, email: user.email, role: user.role });
     } catch (error) {
         res.status(500).json({ error: 'Login error' });
     }
@@ -204,7 +243,12 @@ app.post('/api/predict', authenticateToken, (req, res) => {
 // --- ADMIN CONTROL ENDPOINTS ---
 app.get('/api/admin/users', authenticateToken, async (req, res) => {
     try {
-        // In a real app, check for admin role. For demo, we allow authorized users to see.
+        // Strict Role-Based Access Control
+        if (req.user.role !== 'ADMIN') {
+            console.warn(`Unauthorized Admin access attempt by UID: ${req.user.userId}`);
+            return res.status(403).json({ error: 'Forbidden: Admin access required' });
+        }
+
         const users = await prisma.user.findMany({
             include: {
                 _count: {
@@ -255,6 +299,8 @@ app.post('/api/upload', authenticateToken, upload.single('dataset'), (req, res) 
                             userId: req.user.userId
                         }
                     }).then(() => {
+                        // Notify client of pipeline update
+                        notifyUser(req.user.userId, { type: 'PIPELINE_UPDATED' });
                         res.json({ message: 'Success', rowsProcessed: results.length, predictions: message.predictions });
                     }).catch((dbErr) => {
                         console.error('DB error:', dbErr);

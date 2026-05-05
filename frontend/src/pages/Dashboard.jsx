@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FileText } from 'lucide-react';
 import LiveChart from '../components/LiveChart';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { API_BASE_URL, WS_URL } from '../config';
 
 export default function Dashboard() {
     const navigate = useNavigate();
-    const { data: wsData, isConnected } = useWebSocket('ws://localhost:3005');
+    const token = localStorage.getItem('token');
+    const { data: wsData, isConnected } = useWebSocket(WS_URL, token);
 
     const [marketDelta, setMarketDelta] = useState(0);
     const [startPrice, setStartPrice] = useState(null);
@@ -13,56 +16,58 @@ export default function Dashboard() {
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [userName, setUserName] = useState('Analyst');
 
+    const fetchHistory = async () => {
+        try {
+            if (!token) return;
+
+            const res = await fetch(`${API_BASE_URL}/api/uploads`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.status === 401 || res.status === 403) {
+                console.warn("Session expired or unauthorized. Redirecting to login...");
+                localStorage.removeItem('token');
+                window.location.href = '/registration';
+                return;
+            }
+
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+            setUploadHistory(data);
+        } catch (err) {
+            console.error('History fetch failed:', err);
+        } finally {
+            setIsInitialLoad(false);
+        }
+    };
+
     useEffect(() => {
         const stored = localStorage.getItem('userName');
         if (stored) setUserName(stored);
         
-        const fetchHistory = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) return;
-
-                const res = await fetch('/api/uploads', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (res.status === 401 || res.status === 403) {
-                    console.warn("Session expired or unauthorized. Redirecting to login...");
-                    localStorage.removeItem('token');
-                    window.location.href = '/registration';
-                    return;
-                }
-
-                if (!res.ok) throw new Error('Network error');
-                const data = await res.json();
-                setUploadHistory(data);
-            } catch (err) {
-                console.error('History fetch failed:', err);
-            } finally {
-                setIsInitialLoad(false);
-            }
-        };
-
         fetchHistory();
-        const intervalId = setInterval(fetchHistory, 5000); // Check for new uploads every 5s
-        return () => clearInterval(intervalId);
     }, []);
 
     useEffect(() => {
-        if (wsData && wsData.type === 'tick') {
-            const currentPrice = wsData.close;
-            if (!startPrice) {
-                setStartPrice(wsData.open);
-            } else {
-                const delta = ((currentPrice - startPrice) / startPrice) * 100;
-                setMarketDelta(delta);
+        if (wsData) {
+            if (wsData.type === 'tick') {
+                const currentPrice = wsData.close;
+                if (!startPrice) {
+                    setStartPrice(wsData.open);
+                } else {
+                    const delta = ((currentPrice - startPrice) / startPrice) * 100;
+                    setMarketDelta(delta);
+                }
+            } else if (wsData.type === 'PIPELINE_UPDATED') {
+                console.info('Pipeline update received via WebSocket. Refreshing history...');
+                fetchHistory();
             }
         }
     }, [wsData, startPrice]);
 
     return (
         <main className="flex-1 flex flex-col overflow-hidden bg-bg-dark h-[100vh]">
-            <header className="h-16 flex-shrink-0 flex items-center justify-between px-8 border-b border-border-subtle sticky top-0 bg-bg-dark/90 backdrop-blur-md z-10 w-full">
+            <header className="h-16 flex-shrink-0 flex items-center justify-between pl-20 pr-4 md:px-8 border-b border-border-subtle sticky top-0 bg-bg-dark/90 backdrop-blur-md z-10 w-full">
                 <div className="flex items-center gap-8 flex-1">
                     <div>
                         <h2 className="text-sm font-bold text-white uppercase tracking-wider">Refined Market Dashboard</h2>
@@ -76,7 +81,7 @@ export default function Dashboard() {
                 </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar w-full relative">
+            <div className="flex-1 overflow-y-auto p-4 pt-6 md:p-8 space-y-8 md:space-y-10 custom-scrollbar w-full relative">
                 <section className="animate-in fade-in slide-in-from-top-4 duration-700">
                     <div className="flex flex-col gap-1 mb-8">
                         <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">System Intelligence Ready</p>
@@ -184,7 +189,7 @@ export default function Dashboard() {
                                             <td className="px-8 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="size-8 rounded bg-white/5 flex items-center justify-center text-slate-muted group-hover:text-primary transition-colors">
-                                                        <span className="material-symbols-outlined">description</span>
+                                                        <FileText className="h-4 w-4" />
                                                     </div>
                                                     <div>
                                                         <span className="block text-sm font-semibold text-white/90">{upload.filename}</span>
@@ -192,7 +197,7 @@ export default function Dashboard() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-4 text-xs text-slate-400 font-medium hidden md:table-cell">{upload.timestamp}</td>
+                                            <td className="px-8 py-4 text-xs text-slate-400 font-medium hidden md:table-cell">{upload.createdAt || upload.timestamp}</td>
                                             <td className="px-8 py-4">
                                                 <span className="status-badge bg-primary/5 text-primary border-primary/20">
                                                     Ready

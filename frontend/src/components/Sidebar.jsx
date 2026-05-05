@@ -1,11 +1,12 @@
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutGrid, TrendingUp, Activity, Database, LogOut, Plus, Shield } from 'lucide-react';
+import { LayoutGrid, TrendingUp, Activity, Database, LogOut, Shield, Radar, Menu, X } from 'lucide-react';
 
 export default function Sidebar() {
     const navigate = useNavigate();
     const [userName, setUserName] = useState('Guest Analyst');
     const [userEmail, setUserEmail] = useState('not.authenticated@sys');
+    const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
         const stored = localStorage.getItem('userName');
@@ -14,13 +15,13 @@ export default function Sidebar() {
         if (storedEmail) setUserEmail(storedEmail);
     }, []);
 
-    const isAdmin = userEmail.toLowerCase().includes('admin') || userEmail === 'guest@quantai.demo'; // Showing for demo too
+    const isAdmin = localStorage.getItem('userRole') === 'ADMIN';
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
         localStorage.removeItem('userName');
         localStorage.removeItem('userEmail');
-        // Clear Intelligence Cache
         localStorage.removeItem('v_pred_result');
         localStorage.removeItem('v_hist_data');
         localStorage.removeItem('v_metrics');
@@ -29,8 +30,11 @@ export default function Sidebar() {
         localStorage.removeItem('v_confidence');
         navigate('/registration');
     };
+
+    const closeSidebar = () => setIsOpen(false);
     const navItems = [
         { name: 'Overview', path: '/dashboard', icon: <LayoutGrid className="w-5 h-5" /> },
+        { name: 'NSE Pulse', path: '/pulse', icon: <Radar className="w-5 h-5" /> },
         { name: 'Prediction Engine', path: '/prediction', icon: <TrendingUp className="w-5 h-5" /> },
         { name: 'Data Ingestion', path: '/upload', icon: <Database className="w-5 h-5" /> },
     ];
@@ -40,12 +44,39 @@ export default function Sidebar() {
     }
 
     return (
-        <aside className="w-64 flex-shrink-0 bg-deep-indigo border-r border-border-subtle flex flex-col z-20 h-full">
-            <div className="p-6 flex items-center gap-3">
+        <>
+            <button
+                type="button"
+                onClick={() => setIsOpen(true)}
+                className="fixed left-4 top-4 z-40 flex h-11 w-11 items-center justify-center rounded-xl border border-border-subtle bg-deep-indigo text-white shadow-[0_0_20px_rgba(0,0,0,0.35)] md:hidden"
+            >
+                <Menu className="h-5 w-5" />
+            </button>
+
+            {isOpen && (
+                <button
+                    type="button"
+                    aria-label="Close navigation overlay"
+                    className="fixed inset-0 z-30 bg-black/60 backdrop-blur-[2px] md:hidden"
+                    onClick={closeSidebar}
+                />
+            )}
+
+            <aside
+                className={`fixed left-0 top-0 z-40 h-full w-[18rem] flex-shrink-0 border-r border-border-subtle bg-deep-indigo transition-transform duration-300 md:static md:z-20 md:w-64 ${
+                    isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+                } flex flex-col`}
+            >
+            <div className="p-6 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
                 <div className="size-8 bg-primary rounded flex items-center justify-center text-deep-indigo shadow-[0_0_20px_rgba(13,242,89,0.2)]">
                     <Activity className="w-5 h-5 font-bold" />
                 </div>
                 <h1 className="text-lg font-bold tracking-tight text-white italic uppercase">Vishleshak</h1>
+                </div>
+                <button type="button" onClick={closeSidebar} className="text-slate-muted hover:text-white md:hidden">
+                    <X className="h-5 w-5" />
+                </button>
             </div>
 
             <nav className="flex-1 px-4 space-y-0.5 mt-2">
@@ -61,6 +92,7 @@ export default function Sidebar() {
                                 : 'text-slate-muted hover:text-white hover:bg-white/5'
                             }`
                         }
+                        onClick={closeSidebar}
                     >
                         {item.icon}
                         <span className="text-sm font-semibold">{item.name}</span>
@@ -101,6 +133,7 @@ export default function Sidebar() {
                     </div>
                 </div>
             </div>
-        </aside>
+            </aside>
+        </>
     );
 }
