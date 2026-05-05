@@ -69,7 +69,7 @@ export default function LiveChart({ wsData }) {
             cSeries.setData(buildSeedData());
             chart.timeScale().fitContent();
             seededRef.current = true;
-            setIsReady(true);
+            requestAnimationFrame(() => setIsReady(true));
 
             const resizeObserver = new ResizeObserver(entries => {
                 if (entries.length === 0 || entries[0].target !== chartContainerRef.current) { return; }
@@ -88,7 +88,7 @@ export default function LiveChart({ wsData }) {
                 }
                 chartRef.current = null;
                 seriesRef.current = null;
-                setIsReady(false);
+                requestAnimationFrame(() => setIsReady(false));
             };
         } catch (error) {
             console.error("Error creating LiveChart:", error);

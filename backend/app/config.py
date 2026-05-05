@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://postgres:postgres@localhost:5432/nse_pulse"
     allow_mock_data: bool = True
     model_version: str = "nse-pulse-v2.0-beta"
+    oi_poll_interval_s: float = 180.0
+    inference_interval_s: float = 15.0
+    vix_poll_interval_s: float = 30.0
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

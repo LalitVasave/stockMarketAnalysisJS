@@ -1,69 +1,116 @@
 const http = require('http');
 const WebSocket = require('ws');
+const { createClient } = require('redis');
 
 const port = Number(process.env.PORT || 8080);
+const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379/0';
+const tickStream = process.env.TICK_STREAM || 'ticks';
+const streamBlockMs = Number(process.env.STREAM_BLOCK_MS || 2000);
 const server = http.createServer();
 const wss = new WebSocket.Server({ server });
 
-const symbols = [
-  { symbol: 'RELIANCE', ltp: 2847.5, change_pct: 1.23, direction: 'bullish', oi_state: 'long_buildup', confidence: 0.73, regime: 'bull', sentiment_score: 0.42, volume: 2481000 },
-  { symbol: 'HDFCBANK', ltp: 1628.35, change_pct: 0.84, direction: 'bullish', oi_state: 'long_buildup', confidence: 0.68, regime: 'bull', sentiment_score: 0.27, volume: 1930000 },
-  { symbol: 'ICICIBANK', ltp: 1194.8, change_pct: -0.62, direction: 'bearish', oi_state: 'short_buildup', confidence: 0.66, regime: 'sideways', sentiment_score: -0.11, volume: 1540000 },
-  { symbol: 'INFY', ltp: 1492.1, change_pct: 1.88, direction: 'bullish', oi_state: 'short_covering', confidence: 0.79, regime: 'bull', sentiment_score: 0.35, volume: 1120000 },
-  { symbol: 'TCS', ltp: 3842.55, change_pct: -1.16, direction: 'bearish', oi_state: 'short_buildup', confidence: 0.71, regime: 'bear', sentiment_score: -0.18, volume: 610000 },
-  { symbol: 'SBIN', ltp: 812.9, change_pct: 2.32, direction: 'bullish', oi_state: 'short_covering', confidence: 0.82, regime: 'bull', sentiment_score: 0.52, volume: 3230000 },
-];
+const latestBySymbol = new Map();
+let latestVix = 16.8;
 
 function pushSnapshot(ws) {
+  const symbols = Array.from(latestBySymbol.values());
   ws.send(JSON.stringify({
     type: 'snapshot',
-    vix: 16.8,
+    vix: latestVix,
     marketStatus: 'open',
     ticks: symbols,
   }));
 }
 
-function fluctuate(symbol) {
-  const directionBias = symbol.direction === 'bullish' ? 1 : -1;
-  const drift = (Math.random() - 0.45) * 0.35 * directionBias;
-  symbol.change_pct = Number((symbol.change_pct + drift / 10).toFixed(2));
-  symbol.ltp = Number((symbol.ltp * (1 + (drift / 1000))).toFixed(2));
-  symbol.confidence = Number(Math.max(0.42, Math.min(0.9, symbol.confidence + (Math.random() - 0.5) * 0.03)).toFixed(2));
-  symbol.volume += Math.round(Math.random() * 50000);
-  return symbol;
+function broadcast(message) {
+  const payload = JSON.stringify(message);
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) client.send(payload);
+  });
 }
 
 wss.on('connection', (ws) => {
   pushSnapshot(ws);
 });
 
-setInterval(() => {
-  const time = new Date().toISOString();
-  symbols.forEach((symbol) => {
-    const tick = fluctuate(symbol);
-    const payload = JSON.stringify({
-      type: 'tick',
-      symbol: tick.symbol,
-      ts: time,
-      ...tick,
-      vix_discounted_confidence: tick.confidence,
-    });
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(payload);
-      }
-    });
-  });
+async function startStreamConsumer() {
+  const redis = createClient({ url: redisUrl });
+  redis.on('error', (err) => console.error('Redis error:', err));
+  await redis.connect();
+  console.log(`Connected to Redis at ${redisUrl}`);
 
-  const vix = Number((16.8 + (Math.random() - 0.5) * 0.8).toFixed(2));
-  const vixPayload = JSON.stringify({ type: 'vix', vix, ts: time });
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(vixPayload);
+  let lastId = '$';
+  while (true) {
+    try {
+      // XREAD BLOCK <ms> STREAMS ticks <id>
+      const response = await redis.xRead(
+        [{ key: tickStream, id: lastId }],
+        { BLOCK: streamBlockMs, COUNT: 250 }
+      );
+
+      if (!response) continue;
+      for (const stream of response) {
+        for (const message of stream.messages) {
+          lastId = message.id;
+          const fields = message.message || {};
+          const symbol = fields.symbol;
+          if (!symbol) continue;
+
+          let payload = {};
+          try {
+            payload = fields.payload ? JSON.parse(fields.payload) : {};
+          } catch {
+            payload = {};
+          }
+
+          const tick = { symbol, ...payload };
+          latestBySymbol.set(symbol, tick);
+
+          broadcast({
+            type: 'tick',
+            symbol,
+            ts: payload.ts || new Date().toISOString(),
+            ...tick,
+            vix_discounted_confidence: tick.vix_discounted_confidence ?? tick.confidence,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Stream consume loop error:', err);
+      await new Promise((r) => setTimeout(r, 1000));
     }
-  });
-}, 2000);
+  }
+}
+
+async function startVixPublisher() {
+  const redis = createClient({ url: redisUrl });
+  redis.on('error', (err) => console.error('Redis VIX client error:', err));
+  await redis.connect();
+
+  setInterval(async () => {
+    try {
+      const raw = await redis.get('market:vix');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.vix === 'number') latestVix = parsed.vix;
+      }
+    } catch {
+      // keep last vix
+    }
+    broadcast({ type: 'vix', vix: latestVix, ts: new Date().toISOString() });
+  }, 2000);
+}
 
 server.listen(port, () => {
   console.log(`NSE Pulse gateway listening on ${port}`);
+});
+
+startStreamConsumer().catch((err) => {
+  console.error('Failed to start stream consumer:', err);
+  process.exitCode = 1;
+});
+
+startVixPublisher().catch((err) => {
+  console.error('Failed to start VIX publisher:', err);
+  process.exitCode = 1;
 });

@@ -32,7 +32,7 @@ export default function StockChart({ symbol, livePrice }) {
     const chart = createChart(containerRef.current, {
       autoSize: true,
       layout: {
-        background: { color: 'transparent' },
+        background: { type: 'solid', color: 'transparent' },
         textColor: '#4A7A9B',
       },
       grid: {
@@ -83,7 +83,33 @@ export default function StockChart({ symbol, livePrice }) {
     histogramRef.current = histogramSeries;
     rsiSeriesRef.current = rsiSeries;
 
-    return () => chart.remove();
+    // Helps first paint when container measures late (modals, tab switches).
+    requestAnimationFrame(() => {
+      try {
+        chart.timeScale().fitContent();
+      } catch {
+        // ignore
+      }
+    });
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (entries.length === 0) return;
+      const rect = entries[0].contentRect;
+      if (rect.width > 0 && rect.height > 0) {
+        chart.applyOptions({ width: rect.width, height: rect.height });
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      chart.remove();
+      chartRef.current = null;
+      candleSeriesRef.current = null;
+      lineSeriesRef.current = null;
+      histogramRef.current = null;
+      rsiSeriesRef.current = null;
+    };
   }, [candles]);
 
   useEffect(() => {

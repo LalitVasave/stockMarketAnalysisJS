@@ -1,21 +1,12 @@
 import { useNavigate, NavLink } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LayoutGrid, TrendingUp, Activity, Database, LogOut, Shield, Radar, Menu, X } from 'lucide-react';
 
 export default function Sidebar() {
     const navigate = useNavigate();
-    const [userName, setUserName] = useState('Guest Analyst');
-    const [userEmail, setUserEmail] = useState('not.authenticated@sys');
+    const [userName] = useState(() => localStorage.getItem('userName') || 'Guest Analyst');
+    const [userEmail] = useState(() => localStorage.getItem('userEmail') || 'not.authenticated@sys');
     const [isOpen, setIsOpen] = useState(false);
-
-    useEffect(() => {
-        const stored = localStorage.getItem('userName');
-        if (stored) setUserName(stored);
-        const storedEmail = localStorage.getItem('userEmail');
-        if (storedEmail) setUserEmail(storedEmail);
-    }, []);
-
-    const isAdmin = localStorage.getItem('userRole') === 'ADMIN';
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -37,11 +28,8 @@ export default function Sidebar() {
         { name: 'NSE Pulse', path: '/pulse', icon: <Radar className="w-5 h-5" /> },
         { name: 'Prediction Engine', path: '/prediction', icon: <TrendingUp className="w-5 h-5" /> },
         { name: 'Data Ingestion', path: '/upload', icon: <Database className="w-5 h-5" /> },
+        { name: 'Network Command', path: '/admin', icon: <Shield className="w-5 h-5" /> },
     ];
-
-    if (isAdmin) {
-        navItems.push({ name: 'Network Command', path: '/admin', icon: <Shield className="w-5 h-5" /> });
-    }
 
     return (
         <>

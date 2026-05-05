@@ -16,14 +16,14 @@ export default function SidebarFilters({
   setWatchlistOnly,
 }) {
   return (
-    <aside className="hidden w-full border-b border-[rgba(0,212,255,0.08)] bg-[rgba(3,10,17,0.84)] px-4 py-4 xl:block xl:w-[292px] xl:border-b-0 xl:border-r xl:px-5">
+    <aside className="hidden w-full border-b border-border-subtle bg-deep-indigo px-4 py-4 xl:block xl:w-[292px] xl:border-b-0 xl:border-r xl:px-5">
       <div className="sticky top-[118px] space-y-4">
-        <div className="rounded-[24px] border border-[rgba(0,212,255,0.12)] bg-[rgba(5,15,26,0.85)] p-4">
+        <div className="rounded-2xl border border-border-subtle bg-white/[0.02] p-4">
           <div className="mb-4 flex items-center gap-3">
-            <Filter size={16} className="text-[var(--pulse)]" />
+            <Filter size={16} className="text-primary" />
             <div>
-              <p className="terminal-eyebrow">Watch Surface</p>
-              <h3 className="font-display text-lg text-white">Filters</h3>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Watch Surface</p>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Filters</h3>
             </div>
           </div>
 
@@ -58,8 +58,8 @@ export default function SidebarFilters({
             <button
               className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                 watchlistOnly
-                  ? 'border-[rgba(0,255,136,0.28)] bg-[rgba(0,255,136,0.08)] text-white'
-                  : 'border-[rgba(0,212,255,0.12)] bg-[rgba(2,8,16,0.72)] text-[var(--text-muted)]'
+                  ? 'border-primary/30 bg-primary/10 text-white'
+                  : 'border-border-subtle bg-white/5 text-slate-muted'
               }`}
               onClick={() => setWatchlistOnly((current) => !current)}
             >
@@ -67,48 +67,48 @@ export default function SidebarFilters({
                 <Bookmark size={15} />
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-[0.22em]">Watchlist Only</div>
-                  <div className="text-[11px]">Focus the matrix on selected symbols.</div>
+                  <div className="text-[11px] text-slate-400">Focus the matrix on selected symbols.</div>
                 </div>
               </div>
             </button>
           </div>
         </div>
 
-        <div className="rounded-[24px] border border-[rgba(0,212,255,0.12)] bg-[rgba(5,15,26,0.85)] p-4">
+        <div className="rounded-2xl border border-border-subtle bg-white/[0.02] p-4">
           <div className="mb-4 flex items-center gap-3">
-            <Radar size={16} className="text-[var(--bull)]" />
+            <Radar size={16} className="text-primary" />
             <div>
-              <p className="terminal-eyebrow">Judge-Winning Extra</p>
-              <h3 className="font-display text-lg text-white">Squeeze Radar</h3>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Judge-Winning Extra</p>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Squeeze Radar</h3>
             </div>
           </div>
           <div className="space-y-3 text-sm">
-            <div className="rounded-2xl border border-[rgba(0,255,136,0.18)] bg-[rgba(0,255,136,0.05)] p-3">
+            <div className="rounded-2xl border border-primary/20 bg-primary/10 p-3">
               <div className="flex items-center justify-between">
-                <strong className="font-display text-white">SBIN</strong>
-                <span className="text-[var(--bull)]">82%</span>
+                <strong className="text-sm font-bold text-white">SBIN</strong>
+                <span className="text-primary">82%</span>
               </div>
-              <p className="mt-2 text-[var(--text-muted)]">5-session Short Buildup to Short Covering unwind. Delivery trend supportive.</p>
+              <p className="mt-2 text-slate-300">5-session Short Buildup to Short Covering unwind. Delivery trend supportive.</p>
             </div>
-            <div className="rounded-2xl border border-[rgba(255,184,0,0.18)] bg-[rgba(255,184,0,0.05)] p-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
               <div className="flex items-center justify-between">
-                <strong className="font-display text-white">INFY</strong>
-                <span className="text-[var(--amber)]">67%</span>
+                <strong className="text-sm font-bold text-white">INFY</strong>
+                <span className="text-slate-300">67%</span>
               </div>
-              <p className="mt-2 text-[var(--text-muted)]">Covering phase detected, but VIX discount prevents top-tier conviction.</p>
+              <p className="mt-2 text-slate-400">Covering phase detected, but VIX discount prevents top-tier conviction.</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-[24px] border border-[rgba(0,212,255,0.12)] bg-[rgba(5,15,26,0.85)] p-4">
+        <div className="rounded-2xl border border-border-subtle bg-white/[0.02] p-4">
           <div className="mb-4 flex items-center gap-3">
-            <SlidersHorizontal size={16} className="text-[var(--pulse)]" />
+            <SlidersHorizontal size={16} className="text-primary" />
             <div>
-              <p className="terminal-eyebrow">Macro State</p>
-              <h3 className="font-display text-lg text-white">Session Notes</h3>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Macro State</p>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Session Notes</h3>
             </div>
           </div>
-          <ul className="space-y-2 text-sm text-[var(--text-muted)]">
+          <ul className="space-y-2 text-sm text-slate-400">
             <li>VIX remains below stress threshold, so no major confidence haircut is active.</li>
             <li>Banking leadership is driving bullish breadth through the live basket.</li>
             <li>Auto and IT are split, making OI alignment more important than raw momentum.</li>

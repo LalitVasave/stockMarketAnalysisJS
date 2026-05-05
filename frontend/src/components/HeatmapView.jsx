@@ -18,20 +18,20 @@ export default function HeatmapView({ stocks, onOpen }) {
         return (
           <button
             key={stock.symbol}
-            className={`rounded-[28px] border border-[rgba(0,212,255,0.12)] p-4 text-left transition hover:-translate-y-1 ${style.className}`}
-            style={{ background: `linear-gradient(135deg, ${style.background}, rgba(5,15,26,0.92))` }}
+            className={`rounded-2xl border border-border-subtle p-4 text-left transition hover:-translate-y-1 hover:border-primary/20 ${style.className}`}
+            style={{ background: `linear-gradient(135deg, ${style.background}, rgba(22,27,34,0.92))` }}
             onClick={() => onOpen(stock.symbol)}
           >
             <div className="flex h-full flex-col justify-between">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="font-display text-lg text-white">{stock.symbol}</div>
-                  <div className="text-xs text-[var(--text-muted)]">{stock.company}</div>
+                  <div className="text-sm font-bold text-white uppercase tracking-wider">{stock.symbol}</div>
+                  <div className="text-xs text-slate-400">{stock.company}</div>
                 </div>
                 <span className={`oi-badge oi-${stock.positioning?.oi_state}`}>{stock.positioning?.oi_state?.replaceAll('_', ' ')}</span>
               </div>
               <div>
-                <div className="font-data text-2xl text-white">{Math.round((stock.prediction?.vix_discounted_confidence ?? 0.5) * 100)}%</div>
+                <div className="font-mono text-2xl font-bold text-white">{Math.round((stock.prediction?.vix_discounted_confidence ?? 0.5) * 100)}%</div>
                 <div className="mt-1 text-sm capitalize text-white/90">{stock.prediction?.direction}</div>
               </div>
             </div>

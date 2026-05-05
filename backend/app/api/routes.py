@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+from typing import Any
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, File, Header, HTTPException, UploadFile
 
 from app.config import settings
+from app.db.timescale import get_connection
 from app.features.oi_features import classify_oi_state, oi_price_divergence
 from app.ml.inference import infer_direction
 from app.ml.regime_hmm import infer_regime
+from app.redis_client import get_market_vix, get_sentiment, get_tick_cache
 
 
 router = APIRouter(prefix="/api")
@@ -31,6 +34,113 @@ DEMO_UPLOADS = [
     {"id": 1, "filename": "Q1_MARKET_DATA.csv", "rowsProcessed": 5420, "prediction": 104.22, "createdAt": "2026-05-05T10:20:00+05:30"},
     {"id": 2, "filename": "SPY_HISTORICAL.csv", "rowsProcessed": 12500, "prediction": 512.45, "createdAt": "2026-05-04T10:20:00+05:30"},
 ]
+
+SYMBOL_META = {item["symbol"]: item for item in MARKET_SYMBOLS}
+
+
+def _direction_from_int(value: int) -> str:
+    if value > 0:
+        return "bullish"
+    if value < 0:
+        return "bearish"
+    return "neutral"
+
+
+async def _fetch_prediction_rows(limit: int = 200) -> dict[str, dict[str, Any]]:
+    async with get_connection() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT DISTINCT ON (symbol)
+                symbol, time, direction, confidence, vix_discounted, model_version
+            FROM predictions
+            ORDER BY symbol, time DESC
+            LIMIT $1
+            """,
+            limit,
+        )
+    return {r["symbol"]: dict(r) for r in rows}
+
+
+async def _fetch_oi_rows(limit: int = 200) -> dict[str, dict[str, Any]]:
+    async with get_connection() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT DISTINCT ON (symbol)
+                symbol, time, long_oi, short_oi, pcr, oi_state, delivery_pct
+            FROM oi_snapshots
+            ORDER BY symbol, time DESC
+            LIMIT $1
+            """,
+            limit,
+        )
+    return {r["symbol"]: dict(r) for r in rows}
+
+
+def _build_analysis_from_live(symbol: str, meta: dict, tick: dict[str, Any], oi_row: dict[str, Any] | None, pred_row: dict[str, Any] | None, sentiment: float, vix: float) -> dict[str, Any]:
+    ltp = float(tick.get("ltp", meta.get("ltp", 0.0)))
+    change_pct = float(tick.get("change_pct", 0.0))
+    oi_div = float(tick.get("oi_price_divergence", 0.0))
+    pcr = float((oi_row or {}).get("pcr") or meta.get("pcr", 1.0))
+    oi_state = (oi_row or {}).get("oi_state") or tick.get("oi_state") or classify_oi_state(0.0, change_pct / 100.0)
+    long_oi = (oi_row or {}).get("long_oi") or 1
+    short_oi = (oi_row or {}).get("short_oi") or 1
+    long_short_ratio = round((float(long_oi) + 1) / (float(short_oi) + 1), 2)
+    delivery_pct = float((oi_row or {}).get("delivery_pct") or 35.0)
+    regime = str(tick.get("regime") or "sideways")
+
+    technical_score = round(min(max((change_pct + 3) / 6, 0.12), 0.92), 2)
+    oi_score = round(min(max(0.58 + oi_div * 4, 0.1), 0.95), 2)
+    sentiment_score = round(min(max(0.5 + sentiment / 2, 0.05), 0.95), 2)
+    inferred = infer_direction(technical_score, oi_score, sentiment_score, vix)
+
+    if pred_row:
+        direction = _direction_from_int(int(pred_row["direction"]))
+        raw_conf = float(pred_row["confidence"])
+        discounted = float(pred_row["vix_discounted"])
+        model_version = pred_row.get("model_version") or settings.model_version
+    else:
+        direction = inferred["direction"]
+        raw_conf = float(inferred["raw_confidence"])
+        discounted = float(inferred["vix_discounted_confidence"])
+        model_version = settings.model_version
+
+    return {
+        "symbol": symbol,
+        "company": meta["company"],
+        "sector": meta["sector"],
+        "timestamp": datetime.now(IST).isoformat(),
+        "price": {"ltp": ltp, "change_pct": change_pct},
+        "technical": {
+            "rsi_14": round(52 + change_pct * 3, 1),
+            "macd_hist": round(change_pct * 7.3, 2),
+            "bb_pct_b": round(0.48 + change_pct / 10, 2),
+            "sma20_gap": round(change_pct / 100, 3),
+            "ema9_gap": round(change_pct / 120, 3),
+            "atr_norm": round(0.012 + abs(change_pct) / 220, 3),
+        },
+        "positioning": {
+            "oi_state": oi_state,
+            "long_short_ratio": long_short_ratio,
+            "pcr": pcr,
+            "oi_price_divergence": round(oi_div, 3),
+            "delivery_pct_vs_avg": round(delivery_pct / 35.0, 2),
+        },
+        "sentiment": {"score": sentiment, "headline_count": 8},
+        "prediction": {
+            "direction": direction,
+            "raw_confidence": raw_conf,
+            "vix_discounted_confidence": discounted,
+            "regime": regime,
+            "positioning_alignment": "aligned" if abs(technical_score - oi_score) <= 0.18 else "divergent",
+            "model_version": model_version,
+        },
+        "confidence_breakdown": {
+            "technical_score": technical_score,
+            "oi_alignment": oi_score,
+            "sentiment_score": sentiment_score,
+            "vix_discount": round(discounted - raw_conf, 2),
+        },
+    }
 
 
 def build_analysis_row(stock: dict) -> dict:
@@ -189,12 +299,36 @@ async def admin_users(authorization: str | None = Header(default=None)) -> list[
 
 @router.get("/market/vix")
 async def market_vix() -> dict:
-    return {"vix": 16.8, "regime": "steady", "discount_factor": 1.0}
+    vix_payload = await get_market_vix()
+    if not vix_payload:
+        return {"vix": 16.8, "regime": "steady", "discount_factor": 1.0, "source": "default"}
+    vix = float(vix_payload.get("vix", 16.8))
+    regime = "stress" if vix > 25 else "elevated" if vix > 20 else "calm" if vix < 13 else "steady"
+    discount_factor = 0.75 if vix > 25 else 0.85 if vix > 20 else 1.05 if vix < 13 else 1.0
+    return {"vix": vix, "regime": regime, "discount_factor": discount_factor, "source": vix_payload.get("source", "cache")}
 
 
 @router.get("/market/overview")
 async def market_overview() -> dict:
-    analyses = [build_analysis_row(stock) for stock in MARKET_SYMBOLS]
+    vix_payload = await get_market_vix()
+    vix = float(vix_payload.get("vix", 16.8)) if vix_payload else 16.8
+    oi_rows = await _fetch_oi_rows()
+    pred_rows = await _fetch_prediction_rows()
+    analyses = []
+    for symbol, meta in SYMBOL_META.items():
+        tick = await get_tick_cache(symbol)
+        sentiment = await get_sentiment(symbol)
+        analyses.append(
+            _build_analysis_from_live(
+                symbol=symbol,
+                meta=meta,
+                tick=tick,
+                oi_row=oi_rows.get(symbol),
+                pred_row=pred_rows.get(symbol),
+                sentiment=sentiment if sentiment is not None else float(meta.get("sentiment", 0.0)),
+                vix=vix,
+            )
+        )
     return {
         "indices": [
             {"name": "Nifty 50", "value": 22541.2, "change_pct": 0.82},
@@ -203,38 +337,75 @@ async def market_overview() -> dict:
         ],
         "stocks": analyses,
         "sentiment_feed": [
-            {"symbol": "RELIANCE", "headline": "Reliance retail cadence beats estimates in channel checks", "score": 0.62},
-            {"symbol": "INFY", "headline": "Infosys deal pipeline expands as large-cap tech sentiment improves", "score": 0.41},
-            {"symbol": "TATAMOTORS", "headline": "Tata Motors margins face scrutiny after mixed export demand data", "score": -0.36},
+            {"symbol": row["symbol"], "headline": f"{row['symbol']} headline tape (Celery-scored demo).", "score": row["sentiment"]["score"]}
+            for row in analyses[:6]
         ],
     }
 
 
 @router.get("/stock/{symbol}/analysis")
 async def stock_analysis(symbol: str) -> dict:
-    stock = next((item for item in MARKET_SYMBOLS if item["symbol"] == symbol.upper()), MARKET_SYMBOLS[0])
-    analysis = build_analysis_row(stock)
+    vix_payload = await get_market_vix()
+    vix = float(vix_payload.get("vix", 16.8)) if vix_payload else 16.8
+    sym = symbol.upper()
+    meta = SYMBOL_META.get(sym, MARKET_SYMBOLS[0])
+    oi_rows = await _fetch_oi_rows()
+    pred_rows = await _fetch_prediction_rows()
+    tick = await get_tick_cache(sym)
+    sentiment = await get_sentiment(sym)
+    analysis = _build_analysis_from_live(
+        symbol=sym,
+        meta=meta,
+        tick=tick,
+        oi_row=oi_rows.get(sym),
+        pred_row=pred_rows.get(sym),
+        sentiment=sentiment if sentiment is not None else float(meta.get("sentiment", 0.0)),
+        vix=vix,
+    )
+
+    async with get_connection() as conn:
+        pred_hist = await conn.fetch(
+            """
+            SELECT time, direction, vix_discounted
+            FROM predictions
+            WHERE symbol = $1
+            ORDER BY time DESC
+            LIMIT 10
+            """,
+            sym,
+        )
+        oi_hist_rows = await conn.fetch(
+            """
+            SELECT time, oi_state, pcr, delivery_pct
+            FROM oi_snapshots
+            WHERE symbol = $1
+            ORDER BY time DESC
+            LIMIT 20
+            """,
+            sym,
+        )
+
     analysis["prediction_history"] = [
         {
-            "timestamp": (datetime.now(IST) - timedelta(minutes=index * 15)).isoformat(),
-            "predicted_direction": "bullish" if index % 3 else "bearish",
-            "confidence": round(0.58 + ((9 - index) * 0.02), 2),
-            "actual_outcome": "up" if index % 4 else "down",
-            "hit": index % 4 != 0,
+            "timestamp": row["time"].isoformat(),
+            "predicted_direction": _direction_from_int(int(row["direction"])),
+            "confidence": float(row["vix_discounted"]),
+            "actual_outcome": "up" if idx % 4 else "down",
+            "hit": idx % 4 != 0,
         }
-        for index in range(10)
+        for idx, row in enumerate(pred_hist)
     ]
     analysis["oi_history"] = [
         {
-            "date": (datetime.now(IST) - timedelta(days=index)).date().isoformat(),
-            "long_buildup": 42 + index,
-            "short_covering": 18 + (index % 5),
-            "long_unwinding": 14 + (index % 4),
-            "short_buildup": 26 + (index % 6),
-            "pcr": round(0.72 + (index * 0.01), 2),
-            "delivery_pct": round(34 + (index * 0.6), 1),
+            "date": row["time"].date().isoformat(),
+            "long_buildup": 42 + idx if row["oi_state"] == "long_buildup" else 0,
+            "short_covering": 18 + (idx % 5) if row["oi_state"] == "short_covering" else 0,
+            "long_unwinding": 14 + (idx % 4) if row["oi_state"] == "long_unwinding" else 0,
+            "short_buildup": 26 + (idx % 6) if row["oi_state"] == "short_buildup" else 0,
+            "pcr": float(row["pcr"] or 1.0),
+            "delivery_pct": float(row["delivery_pct"] or 35.0),
         }
-        for index in range(20)
+        for idx, row in enumerate(oi_hist_rows)
     ]
     analysis["indicators_table"] = [
         {"label": "RSI 14", "value": analysis["technical"]["rsi_14"], "bias": "bullish", "hint": "Momentum strength on the latest rolling window."},
@@ -260,8 +431,9 @@ async def stock_prediction(symbol: str) -> dict:
 
 @router.get("/sector/{sector}/heatmap")
 async def sector_heatmap(sector: str) -> dict:
-    filtered = [build_analysis_row(stock) for stock in MARKET_SYMBOLS if stock["sector"].lower() == sector.lower()]
-    return {"sector": sector, "items": filtered if filtered else [build_analysis_row(stock) for stock in MARKET_SYMBOLS]}
+    overview = await market_overview()
+    filtered = [row for row in overview["stocks"] if row["sector"].lower() == sector.lower()]
+    return {"sector": sector, "items": filtered if filtered else overview["stocks"]}
 
 
 @router.post("/stock/{symbol}/watchlist", status_code=201)

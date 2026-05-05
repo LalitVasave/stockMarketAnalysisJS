@@ -8,6 +8,7 @@ import Pulse from './pages/Pulse';
 import Prediction from './pages/Prediction';
 import Registration from './pages/Registration';
 import Upload from './pages/Upload';
+import NotFound from './pages/NotFound';
 
 function AppLayout() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/prediction" element={<Prediction />} />
           <Route path="/admin" element={<Admin />} />
         </Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

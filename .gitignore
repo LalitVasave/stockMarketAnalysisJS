@@ -32,3 +32,15 @@ backend/prisma/migrations/
 # App specifics
 uploads/
 backend/uploads/
+
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+
+# IDEs
+.vscode/
+.idea/

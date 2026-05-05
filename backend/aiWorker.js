@@ -40,10 +40,15 @@ class StatisticalForecaster {
         console.log(`Calibrated Model: Slope=${this.slope.toFixed(4)}, Dev=${this.stdDev.toFixed(2)}`);
     }
 
+    /**
+     * Returns predictions for `steps` forward, including:
+     * - trendClose: deterministic OLS trendline value
+     * - predictedClose: trendClose + noise (presentation realism)
+     * - confidence bands: ±1σ and ±2σ around trendClose
+     */
     predict(steps) {
         const n = this.data.length;
         const predictions = [];
-        let currentLevel = this.data[n - 1];
 
         for (let i = 1; i <= steps; i++) {
             const timeIdx = n + i;
@@ -56,12 +61,26 @@ class StatisticalForecaster {
 
             predictions.push({
                 dayOffset: i,
-                predictedClose: finalValue.toFixed(2),
+                trendClose: Number(trendValue.toFixed(2)),
+                predictedClose: Number(finalValue.toFixed(2)),
+                band1Upper: Number((trendValue + this.stdDev).toFixed(2)),
+                band1Lower: Number((trendValue - this.stdDev).toFixed(2)),
+                band2Upper: Number((trendValue + 2 * this.stdDev).toFixed(2)),
+                band2Lower: Number((trendValue - 2 * this.stdDev).toFixed(2)),
                 confidence: (Math.random() * 5 + 90).toFixed(1) // OLS is highly confident on linear trends
             });
         }
         return predictions;
     }
+}
+
+function calculateSMA(values, window) {
+    if (!Array.isArray(values) || values.length === 0) return null;
+    const start = Math.max(0, values.length - window);
+    const slice = values.slice(start);
+    if (slice.length === 0) return null;
+    const sum = slice.reduce((acc, v) => acc + (Number(v) || 0), 0);
+    return sum / slice.length;
 }
 
 async function processData(dataset) {
@@ -102,13 +121,34 @@ async function processData(dataset) {
     await delay(1200); 
 
     const forecastDays = workerData.days || 30;
-    return forecaster.predict(forecastDays);
+    const sma20 = calculateSMA(forecaster.data, 20);
+    const sma50 = calculateSMA(forecaster.data, 50);
+    const smaSignal =
+        sma20 == null || sma50 == null
+            ? 'insufficient_data'
+            : sma20 > sma50
+                ? 'bullish_crossover'
+                : sma20 < sma50
+                    ? 'bearish_crossover'
+                    : 'neutral';
+
+    return {
+        predictions: forecaster.predict(forecastDays),
+        metrics: {
+            slope: forecaster.slope,
+            intercept: forecaster.intercept,
+            stdDev: forecaster.stdDev,
+            sma20,
+            sma50,
+            smaSignal,
+        },
+    };
 }
 
 // Kick off the processing when the worker starts
 processData(workerData.dataset)
-    .then(predictions => {
-        parentPort.postMessage({ status: 'complete', predictions });
+    .then(result => {
+        parentPort.postMessage({ status: 'complete', predictions: result.predictions, metrics: result.metrics });
     })
     .catch(error => {
         parentPort.postMessage({ status: 'error', error: error.message });

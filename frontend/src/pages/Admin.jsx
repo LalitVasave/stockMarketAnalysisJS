@@ -6,6 +6,7 @@ export default function Admin() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [accessDenied, setAccessDenied] = useState(false);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -14,6 +15,10 @@ export default function Admin() {
                 const res = await fetch(`${API_BASE_URL}/api/admin/users`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (res.status === 403) {
+                    setAccessDenied(true);
+                    return;
+                }
                 if (!res.ok) throw new Error('Unauthorized access to administrative core.');
                 const data = await res.json();
                 setUsers(data);
@@ -63,6 +68,16 @@ export default function Admin() {
             </header>
 
             <div className="flex-1 overflow-y-auto p-4 pt-6 md:p-10 space-y-8 custom-scrollbar">
+                {accessDenied && (
+                    <div className="rounded-2xl border border-crimson-red/20 bg-crimson-red/10 p-5">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-crimson-red">Access Restricted</p>
+                        <h3 className="mt-2 text-sm font-bold text-white uppercase tracking-wide">Admin Access Required</h3>
+                        <p className="mt-2 text-sm text-slate-300">
+                            Your current account does not have `ADMIN` role privileges for this page.
+                        </p>
+                    </div>
+                )}
+
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[

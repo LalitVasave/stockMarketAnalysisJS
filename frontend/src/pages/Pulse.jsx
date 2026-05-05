@@ -10,6 +10,7 @@ import StockModal from '../components/StockModal';
 import TickerStrip from '../components/TickerStrip';
 import { useMarketSocket } from '../hooks/useMarketSocket';
 import { marketStore, useMarketStore } from '../store/marketStore';
+import { API_BASE_URL } from '../config';
 
 const viewOptions = ['grid', 'table', 'heatmap'];
 
@@ -41,7 +42,7 @@ export default function Pulse() {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const response = await fetch('/api/uploads', {
+        const response = await fetch(`${API_BASE_URL}/api/uploads`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) return;
@@ -76,12 +77,8 @@ export default function Pulse() {
       });
   }, [overview.stocks, ticks, analyses, watchlistOnly, watchlist, sectorFilter, oiFilter, signalFilter]);
 
-  const userName = localStorage.getItem('userName') || 'Analyst';
-
   return (
-    <main className="terminal-shell relative flex h-screen flex-1 flex-col overflow-hidden bg-[var(--bg)]">
-      <div className="scanline-overlay pointer-events-none" />
-      <div className="app-grid-bg pointer-events-none" />
+    <main className="relative flex h-screen flex-1 flex-col overflow-hidden bg-bg-dark">
 
       <Navbar />
       <TickerStrip indices={overview.indices} />

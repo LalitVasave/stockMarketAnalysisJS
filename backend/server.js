@@ -227,7 +227,8 @@ app.post('/api/predict', authenticateToken, (req, res) => {
                 model, 
                 confidence: parseInt(confidence), 
                 historical: syntheticDataset, // Added historical context
-                predictions: message.predictions 
+                predictions: message.predictions,
+                metrics: message.metrics
             });
         } else if (message.status === 'error') {
             res.status(500).json({ error: 'AI processing failed', details: message.error });
@@ -288,20 +289,20 @@ app.post('/api/upload', authenticateToken, upload.single('dataset'), (req, res) 
                 if (message.status === 'complete') {
                     if (req.user.userId === 9999) {
                         // Bypass DB for demo user
-                        return res.json({ message: 'Success', rowsProcessed: results.length, predictions: message.predictions });
+                        return res.json({ message: 'Success', rowsProcessed: results.length, predictions: message.predictions, metrics: message.metrics });
                     }
                     
                     prisma.upload.create({
                         data: {
                             filename: req.file.originalname,
                             rowsProcessed: results.length,
-                            prediction: message.predictions?.[0]?.predictedClose ? parseFloat(message.predictions[0].predictedClose) : null,
+                            prediction: message.predictions?.[0]?.predictedClose != null ? parseFloat(message.predictions[0].predictedClose) : null,
                             userId: req.user.userId
                         }
                     }).then(() => {
                         // Notify client of pipeline update
                         notifyUser(req.user.userId, { type: 'PIPELINE_UPDATED' });
-                        res.json({ message: 'Success', rowsProcessed: results.length, predictions: message.predictions });
+                        res.json({ message: 'Success', rowsProcessed: results.length, predictions: message.predictions, metrics: message.metrics });
                     }).catch((dbErr) => {
                         console.error('DB error:', dbErr);
                         res.status(500).json({ error: 'Failed to save history' });

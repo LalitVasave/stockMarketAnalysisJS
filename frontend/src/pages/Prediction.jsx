@@ -147,6 +147,30 @@ export default function Prediction() {
                 title: 'AI Forecast',
             });
 
+            // Confidence bands (±1σ and ±2σ) around the trendline.
+            const band1UpperSeries = chart.addSeries(LineSeries, {
+                color: 'rgba(13, 242, 89, 0.28)',
+                lineWidth: 1,
+                title: '+1σ',
+            });
+            const band1LowerSeries = chart.addSeries(LineSeries, {
+                color: 'rgba(13, 242, 89, 0.28)',
+                lineWidth: 1,
+                title: '-1σ',
+            });
+            const band2UpperSeries = chart.addSeries(LineSeries, {
+                color: 'rgba(13, 242, 89, 0.16)',
+                lineWidth: 1,
+                lineStyle: 2,
+                title: '+2σ',
+            });
+            const band2LowerSeries = chart.addSeries(LineSeries, {
+                color: 'rgba(13, 242, 89, 0.16)',
+                lineWidth: 1,
+                lineStyle: 2,
+                title: '-2σ',
+            });
+
             // Deduplication and Sorting
             const histMap = new Map();
             (historicalData || []).forEach(d => {
@@ -173,12 +197,42 @@ export default function Prediction() {
                 return { time: ts, value: val };
             }).filter(d => !isNaN(d.value));
 
+            const band1UpperData = predictionsData.map((p, i) => {
+                const ts = lastHistTime + ((i + 1) * 86400);
+                const val = parseFloat(p?.band1Upper);
+                return { time: ts, value: val };
+            }).filter(d => !isNaN(d.value));
+            const band1LowerData = predictionsData.map((p, i) => {
+                const ts = lastHistTime + ((i + 1) * 86400);
+                const val = parseFloat(p?.band1Lower);
+                return { time: ts, value: val };
+            }).filter(d => !isNaN(d.value));
+            const band2UpperData = predictionsData.map((p, i) => {
+                const ts = lastHistTime + ((i + 1) * 86400);
+                const val = parseFloat(p?.band2Upper);
+                return { time: ts, value: val };
+            }).filter(d => !isNaN(d.value));
+            const band2LowerData = predictionsData.map((p, i) => {
+                const ts = lastHistTime + ((i + 1) * 86400);
+                const val = parseFloat(p?.band2Lower);
+                return { time: ts, value: val };
+            }).filter(d => !isNaN(d.value));
+
             if (histChartData.length > 0) {
                 historicalSeries.setData(histChartData);
             }
             
             if (forecastChartData.length > 0) {
                 forecastSeries.setData(forecastChartData);
+                // Only render bands if worker included them.
+                if (band1UpperData.length > 0 && band1LowerData.length > 0) {
+                    band1UpperSeries.setData(band1UpperData);
+                    band1LowerSeries.setData(band1LowerData);
+                }
+                if (band2UpperData.length > 0 && band2LowerData.length > 0) {
+                    band2UpperSeries.setData(band2UpperData);
+                    band2LowerSeries.setData(band2LowerData);
+                }
                 forecastSeries.createPriceLine({
                     price: forecastChartData[forecastChartData.length - 1].value,
                     color: predictionResult?.isDemo ? '#fbbf24' : '#0df259',

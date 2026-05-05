@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import LiveChart from '../components/LiveChart';
@@ -16,7 +16,7 @@ export default function Dashboard() {
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [userName, setUserName] = useState('Analyst');
 
-    const fetchHistory = async () => {
+    const fetchHistory = useCallback(async () => {
         try {
             if (!token) return;
 
@@ -39,14 +39,14 @@ export default function Dashboard() {
         } finally {
             setIsInitialLoad(false);
         }
-    };
+    }, [token]);
 
     useEffect(() => {
         const stored = localStorage.getItem('userName');
         if (stored) setUserName(stored);
         
         fetchHistory();
-    }, []);
+    }, [fetchHistory]);
 
     useEffect(() => {
         if (wsData) {
@@ -63,7 +63,7 @@ export default function Dashboard() {
                 fetchHistory();
             }
         }
-    }, [wsData, startPrice]);
+    }, [wsData, startPrice, fetchHistory]);
 
     return (
         <main className="flex-1 flex flex-col overflow-hidden bg-bg-dark h-[100vh]">

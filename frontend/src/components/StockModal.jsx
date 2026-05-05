@@ -6,17 +6,17 @@ import StockChart from './StockChart';
 import { marketStore, useMarketStore } from '../store/marketStore';
 
 function scoreBar(label, value, tone, detail) {
-  const toneClass = tone === 'bull' ? 'bg-[var(--bull)]' : tone === 'bear' ? 'bg-[var(--bear)]' : 'bg-[var(--amber)]';
+  const toneClass = tone === 'bull' ? 'bg-primary' : tone === 'bear' ? 'bg-crimson-red' : 'bg-slate-500';
   return (
-    <div className="rounded-[18px] border border-[rgba(0,212,255,0.08)] bg-[rgba(2,8,16,0.72)] p-4">
+    <div className="rounded-xl border border-border-subtle bg-white/5 p-4">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm text-white">{label}</span>
-        <span className="font-data text-sm text-[var(--text-muted)]">{Math.round(value * 100)}%</span>
+        <span className="font-mono text-sm text-slate-muted">{Math.round(value * 100)}%</span>
       </div>
-      <div className="mb-2 h-2 overflow-hidden rounded-full bg-[rgba(13,31,45,0.95)]">
+      <div className="mb-2 h-2 overflow-hidden rounded-full bg-white/5">
         <div className={`confidence-glow h-full rounded-full ${toneClass}`} style={{ width: `${value * 100}%` }} />
       </div>
-      <p className="text-xs text-[var(--text-muted)]">{detail}</p>
+      <p className="text-xs text-slate-400">{detail}</p>
     </div>
   );
 }
@@ -35,40 +35,40 @@ export default function StockModal({ symbol, analysis, onClose }) {
   const price = liveTick?.ltp ?? current?.price?.ltp;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(2,8,16,0.72)] backdrop-blur-md">
-      <div className="modal-shell h-full w-full max-w-[1440px] overflow-y-auto border-l border-[rgba(0,212,255,0.16)] bg-[rgba(3,10,17,0.98)] p-4 md:p-6">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
+      <div className="modal-shell h-full w-full max-w-[1440px] overflow-y-auto border-l border-border-subtle bg-bg-dark p-4 md:p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <p className="terminal-eyebrow">Deep Analysis Surface</p>
-            <h2 className="font-display text-2xl text-white">{symbol}</h2>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Deep Analysis Surface</p>
+            <h2 className="text-xl font-bold text-white uppercase tracking-wider">{symbol}</h2>
           </div>
           <div className="flex items-center gap-3">
-            <button className="rounded-full border border-[rgba(0,212,255,0.14)] bg-[rgba(5,15,26,0.88)] p-3 text-[var(--pulse)]">
+            <button className="rounded-full border border-border-subtle bg-white/5 p-3 text-primary">
               <Download size={18} />
             </button>
-            <button className="rounded-full border border-[rgba(255,59,92,0.18)] bg-[rgba(255,59,92,0.08)] p-3 text-[var(--bear)]" onClick={onClose}>
+            <button className="rounded-full border border-crimson-red/20 bg-crimson-red/10 p-3 text-crimson-red" onClick={onClose}>
               <X size={18} />
             </button>
           </div>
         </div>
 
         {!current ? (
-          <div className="rounded-[28px] border border-[rgba(0,212,255,0.1)] bg-[rgba(5,15,26,0.88)] p-8 shimmer-card">
+          <div className="rounded-2xl border border-border-subtle bg-white/[0.01] p-8 shimmer-card">
             <div className="h-10 w-64 rounded-full bg-[rgba(255,255,255,0.05)]" />
             <div className="mt-6 h-72 rounded-[24px] bg-[rgba(255,255,255,0.04)]" />
           </div>
         ) : (
           <div className="space-y-5">
             <section className="grid gap-5 xl:grid-cols-[1.5fr,0.9fr]">
-              <div className="rounded-[28px] border border-[rgba(0,212,255,0.12)] bg-[rgba(5,15,26,0.9)] p-5">
+              <div className="rounded-2xl border border-border-subtle bg-white/[0.01] p-5">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <p className="terminal-eyebrow">Panel 1</p>
-                    <h3 className="font-display text-xl text-white">TradingView-Style Chart</h3>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Panel 1</p>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">TradingView-Style Chart</h3>
                   </div>
                   <div className="flex gap-2">
                     {['SMA20', 'EMA9', 'BB'].map((overlay) => (
-                      <span key={overlay} className="rounded-full border border-[rgba(0,212,255,0.12)] px-3 py-2 text-xs uppercase tracking-[0.2em] text-[var(--text-muted)]">
+                      <span key={overlay} className="rounded-full border border-border-subtle px-3 py-2 text-xs font-bold uppercase tracking-widest text-slate-muted">
                         {overlay}
                       </span>
                     ))}
@@ -77,10 +77,10 @@ export default function StockModal({ symbol, analysis, onClose }) {
                 <StockChart symbol={symbol} livePrice={price} />
               </div>
 
-              <div className="space-y-5 rounded-[28px] border border-[rgba(0,212,255,0.12)] bg-[rgba(5,15,26,0.9)] p-5">
+              <div className="space-y-5 rounded-2xl border border-border-subtle bg-white/[0.01] p-5">
                 <div>
-                  <p className="terminal-eyebrow">Panel 2</p>
-                  <h3 className="font-display text-xl text-white">Confidence Breakdown</h3>
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Panel 2</p>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Confidence Breakdown</h3>
                 </div>
                 <div className="flex justify-center">
                   <ConfidenceGauge value={current.prediction?.vix_discounted_confidence} label={current.prediction?.direction} />
@@ -91,12 +91,12 @@ export default function StockModal({ symbol, analysis, onClose }) {
                   {scoreBar('FinBERT Sentiment', current.confidence_breakdown?.sentiment_score ?? 0.65, current.sentiment?.score >= 0 ? 'bull' : 'bear', `${current.sentiment?.headline_count} headlines -> ${current.sentiment?.score}`)}
                   {scoreBar('VIX Discount', Math.abs(current.confidence_breakdown?.vix_discount ?? 0.05), 'neutral', `India VIX ${vix.toFixed(2)} keeps the model in a steady regime.`)}
                 </div>
-                <div className={`rounded-full border px-4 py-3 text-center text-sm uppercase tracking-[0.24em] ${
+                <div className={`rounded-full border px-4 py-3 text-center text-sm font-bold uppercase tracking-widest ${
                   current.prediction?.positioning_alignment === 'aligned'
-                    ? 'border-[rgba(0,255,136,0.18)] bg-[rgba(0,255,136,0.08)] text-[var(--bull)]'
+                    ? 'border-primary/20 bg-primary/10 text-primary'
                     : current.prediction?.positioning_alignment === 'divergent'
-                      ? 'border-[rgba(255,59,92,0.18)] bg-[rgba(255,59,92,0.08)] text-[var(--bear)]'
-                      : 'border-[rgba(255,184,0,0.18)] bg-[rgba(255,184,0,0.08)] text-[var(--amber)]'
+                      ? 'border-crimson-red/20 bg-crimson-red/10 text-crimson-red'
+                      : 'border-white/10 bg-white/5 text-slate-300'
                 }`}>
                   {current.prediction?.positioning_alignment}
                 </div>
@@ -104,23 +104,23 @@ export default function StockModal({ symbol, analysis, onClose }) {
             </section>
 
             <section className="grid gap-5 xl:grid-cols-[1.2fr,0.8fr]">
-              <div className="rounded-[28px] border border-[rgba(0,212,255,0.12)] bg-[rgba(5,15,26,0.9)] p-5">
+              <div className="rounded-2xl border border-border-subtle bg-white/[0.01] p-5">
                 <OIHistoryPanel items={current.oi_history || []} />
               </div>
 
-              <div className="rounded-[28px] border border-[rgba(0,212,255,0.12)] bg-[rgba(5,15,26,0.9)] p-5">
-                <p className="terminal-eyebrow">Panel 4</p>
-                <h3 className="font-display text-xl text-white">Indicator Matrix</h3>
+              <div className="rounded-2xl border border-border-subtle bg-white/[0.01] p-5">
+                <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Panel 4</p>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Indicator Matrix</h3>
                 <div className="mt-4 overflow-hidden rounded-[24px] border border-[rgba(0,212,255,0.08)]">
                   <table className="w-full text-sm">
                     <tbody>
                       {(current.indicators_table || []).map((row) => (
                         <tr key={row.label} className="border-b border-[rgba(13,31,45,0.9)]">
                           <td className="px-4 py-3 text-white">{row.label}</td>
-                          <td className={`px-4 py-3 font-data ${row.bias === 'bullish' ? 'text-[var(--bull)]' : row.bias === 'bearish' ? 'text-[var(--bear)]' : 'text-[var(--amber)]'}`}>
+                          <td className={`px-4 py-3 font-mono ${row.bias === 'bullish' ? 'text-primary' : row.bias === 'bearish' ? 'text-crimson-red' : 'text-slate-300'}`}>
                             {row.value}
                           </td>
-                          <td className="px-4 py-3 text-[var(--text-muted)]">{row.hint}</td>
+                          <td className="px-4 py-3 text-slate-400">{row.hint}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -129,12 +129,12 @@ export default function StockModal({ symbol, analysis, onClose }) {
               </div>
             </section>
 
-            <section className="rounded-[28px] border border-[rgba(0,212,255,0.12)] bg-[rgba(5,15,26,0.9)] p-5">
-              <p className="terminal-eyebrow">Panel 5</p>
-              <h3 className="font-display text-xl text-white">Prediction History</h3>
+            <section className="rounded-2xl border border-border-subtle bg-white/[0.01] p-5">
+              <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Panel 5</p>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Prediction History</h3>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[760px] text-sm">
-                  <thead className="text-left text-[10px] uppercase tracking-[0.24em] text-[var(--text-muted)]">
+                  <thead className="text-left text-[10px] font-bold uppercase tracking-widest text-slate-muted">
                     <tr>
                       <th className="px-4 py-3">Timestamp</th>
                       <th className="px-4 py-3">Direction</th>
@@ -145,12 +145,12 @@ export default function StockModal({ symbol, analysis, onClose }) {
                   </thead>
                   <tbody>
                     {(current.prediction_history || []).map((row) => (
-                      <tr key={row.timestamp} className="border-t border-[rgba(13,31,45,0.9)]">
-                        <td className="px-4 py-3 text-[var(--text-muted)]">{row.timestamp}</td>
+                      <tr key={row.timestamp} className="border-t border-border-subtle">
+                        <td className="px-4 py-3 text-slate-400">{row.timestamp}</td>
                         <td className="px-4 py-3 capitalize text-white">{row.predicted_direction}</td>
-                        <td className="px-4 py-3 font-data text-white">{Math.round(row.confidence * 100)}%</td>
-                        <td className="px-4 py-3 uppercase text-[var(--text-muted)]">{row.actual_outcome}</td>
-                        <td className={`px-4 py-3 font-display ${row.hit ? 'text-[var(--bull)]' : 'text-[var(--bear)]'}`}>
+                        <td className="px-4 py-3 font-mono text-white">{Math.round(row.confidence * 100)}%</td>
+                        <td className="px-4 py-3 uppercase text-slate-400">{row.actual_outcome}</td>
+                        <td className={`px-4 py-3 font-bold ${row.hit ? 'text-primary' : 'text-crimson-red'}`}>
                           {row.hit ? '✓' : '✗'}
                         </td>
                       </tr>
